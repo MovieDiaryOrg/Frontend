@@ -291,7 +291,11 @@
     --gutter-mob: 1rem;
 }
 
-
+.center-text {
+    text-align: center; /* 텍스트를 가운데 정렬 */
+    margin: 0 auto; /* 여백을 가운데로 맞춤 */
+    width: 100%;
+}
 
 /* ==========================================================================
  * # normalize
@@ -4243,6 +4247,8 @@ html.no-csstransitions .s-hero__content {
     padding-top: calc(7 * var(--space));
     padding-bottom: 0;
 }
+
+
 
 
 /* ------------------------------------------------------------------- 
