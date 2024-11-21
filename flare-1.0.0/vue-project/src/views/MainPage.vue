@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-white">
     <Header :isLoggedIn="isLoggedIn" @login="login" @logout="logout" />
 
-      <main class="max-w-7xl mx-auto px-6 py-12">
+    <main class="max-w-7xl mx-auto px-6 py-12">
       <h1 class="text-[120px] font-black leading-tight tracking-tight mb-12">
         MY FILM MEMORY
       </h1>
@@ -26,7 +26,11 @@
               <ReviewCard 
                 v-for="review in sortedReviews" 
                 :key="review.id" 
-                :review="review" 
+                :image="review.image"
+                :title="review.title"
+                :author="review.author"
+                :rating="review.rating"
+                :likes="review.likes"
               />
             </div>
           </div>
@@ -76,5 +80,5 @@ const sortedReviews = computed(() => {
 </script>
 
 <style scoped>
-
+/* Add any scoped styles here if needed */
 </style>
