@@ -5,7 +5,7 @@
       <nav class="flex items-center justify-between max-w-7xl mx-auto">
         <div class="flex items-center space-x-6">
           <router-link to="/main" class="text-sm hover:text-gray-600">Home</router-link>
-          <router-link to="/my-diary" class="text-sm hover:text-gray-600">My Diary</router-link>
+          <router-link to="/mydiary" class="text-sm hover:text-gray-600">My Diary</router-link>
         </div>
       </nav>
     </header>
@@ -37,6 +37,16 @@
               <p class="text-lg">name : {{ user.name }}</p>
               <p class="text-lg">phone : {{ user.phone }}</p>
               <p class="text-lg">email : {{ user.email }}</p>
+            </div>
+            <div class="mt-6 flex items-center space-x-8">
+              <div class="flex items-center space-x-2">
+                <UsersIcon class="w-5 h-5 text-gray-500" />
+                <span class="font-medium">{{ user.followers.length }} 팔로워</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <UserPlusIcon class="w-5 h-5 text-gray-500" />
+                <span class="font-medium">{{ user.following.length }} 팔로잉</span>
+              </div>
             </div>
           </div>
         </div>
@@ -78,20 +88,126 @@
           </div>
         </section>
       </div>
+
+      <!-- Followers and Following Section -->
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section class="bg-gray-50 rounded-2xl p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <UsersIcon class="w-5 h-5 mr-2" />
+            팔로워
+          </h2>
+          <div class="space-y-4 h-[300px] overflow-y-auto pr-2">
+            <div v-for="follower in user.followers" :key="follower.id" class="flex items-center space-x-4 bg-white rounded-lg p-4 shadow-sm">
+              <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                <img 
+                  v-if="follower.profileImage"
+                  :src="follower.profileImage" 
+                  alt="Follower Profile Picture"
+                  class="w-full h-full object-cover"
+                />
+                <UserIcon v-else class="w-6 h-6 text-gray-400" />
+              </div>
+              <div>
+                <p class="font-medium">{{ follower.name }}</p>
+                <p class="text-sm text-gray-500">{{ follower.email }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-gray-50 rounded-2xl p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <UserPlusIcon class="w-5 h-5 mr-2" />
+            팔로잉
+          </h2>
+          <div class="space-y-4 h-[300px] overflow-y-auto pr-2">
+            <div v-for="following in user.following" :key="following.id" class="flex items-center space-x-4 bg-white rounded-lg p-4 shadow-sm">
+              <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                <img 
+                  v-if="following.profileImage"
+                  :src="following.profileImage" 
+                  alt="Following Profile Picture"
+                  class="w-full h-full object-cover"
+                />
+                <UserIcon v-else class="w-6 h-6 text-gray-400" />
+              </div>
+              <div>
+                <p class="font-medium">{{ following.name }}</p>
+                <p class="text-sm text-gray-500">{{ following.email }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- New Account Management Section -->
+      <div class="mt-12">
+        <section class="bg-gray-50 rounded-2xl p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <SettingsIcon class="w-5 h-5 mr-2" />
+            계정 관리
+          </h2>
+          <div class="space-y-4">
+            <button
+              @click="showDeleteConfirmation = true"
+              class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300"
+            >
+              회원 탈퇴
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div v-if="showDeleteConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white rounded-lg p-8 max-w-md w-full">
+        <h3 class="text-2xl font-bold mb-4">회원 탈퇴 확인</h3>
+        <p class="mb-6">정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="showDeleteConfirmation = false"
+            class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition duration-300"
+          >
+            취소
+          </button>
+          <button
+            @click="deleteAccount"
+            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300"
+          >
+            탈퇴 확인
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { HeartIcon, MessageCircleIcon, ChevronLeftIcon, ChevronRightIcon, UserIcon } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { HeartIcon, MessageCircleIcon, UserIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
 import ReviewCard from '@/components/ReviewCard.vue'
+
+const router = useRouter()
+const showDeleteConfirmation = ref(false)
 
 const user = ref({
   name: '사용자1',
   phone: '010-1234-5678',
   email: 'admin1@ssafy.com',
-  profileImage: null
+  profileImage: null,
+  followers: [
+    { id: 1, name: '팔로워1', email: 'follower1@example.com', profileImage: null },
+    { id: 2, name: '팔로워2', email: 'follower2@example.com', profileImage: null },
+    { id: 3, name: '팔로워3', email: 'follower3@example.com', profileImage: null },
+  ],
+  following: [
+    { id: 1, name: '팔로잉1', email: 'following1@example.com', profileImage: null },
+    { id: 2, name: '팔로잉2', email: 'following2@example.com', profileImage: null },
+    { id: 3, name: '팔로잉3', email: 'following3@example.com', profileImage: null },
+    { id: 4, name: '팔로잉4', email: 'following4@example.com', profileImage: null },
+  ]
 })
 
 const likedPosts = ref([
@@ -120,6 +236,23 @@ const myComments = ref([
     content: '그렇게 너무 귀엽네요. 잘 봤습니다. 좋아요 누르고 갑니다!'
   }
 ])
+
+const deleteAccount = async () => {
+  try {
+    // Here you would typically make an API call to delete the user's account
+    // For example:
+    // await api.deleteAccount(user.value.id)
+
+    // For demonstration, we'll just simulate a successful deletion
+    console.log('Account deleted successfully')
+
+    // Redirect to the home page or login page after successful deletion
+    router.push('/login')
+  } catch (error) {
+    console.error('Error deleting account:', error)
+    // Handle error (e.g., show an error message to the user)
+  }
+}
 </script>
 
 <style scoped>

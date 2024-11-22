@@ -16,17 +16,19 @@
       
       <form @submit.prevent="handleSignup" class="space-y-6">
         <div class="flex justify-center mb-6">
-          <div class="relative">
-            <img 
-              :src="profileImagePreview || '/placeholder.svg?height=128&width=128'" 
-              alt="Profile Picture" 
-              class="w-32 h-32 rounded-full object-cover"
-            />
+          <div class="relative w-32 h-32">
+            <div v-if="profileImagePreview" class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              <img 
+                :src="profileImagePreview" 
+                alt="Profile Picture" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div v-else class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              <UserIcon class="w-16 h-16 text-gray-400" />
+            </div>
             <label for="profileImage" class="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <CameraIcon class="h-5 w-5" />
             </label>
             <input 
               id="profileImage" 
@@ -140,6 +142,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { CameraIcon, UserIcon, HeartIcon, MessageCircleIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
 
 const router = useRouter()
 const username = ref('')
