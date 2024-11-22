@@ -5,7 +5,7 @@
       <nav class="flex items-center justify-between max-w-7xl mx-auto">
         <div class="flex items-center space-x-6">
           <router-link to="/main" class="text-sm hover:text-gray-600">Home</router-link>
-          <router-link to="/my-diary" class="text-sm hover:text-gray-600">My Diary</router-link>
+          <router-link to="/mydiary" class="text-sm hover:text-gray-600">My Diary</router-link>
         </div>
       </nav>
     </header>

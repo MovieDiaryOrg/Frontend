@@ -3,7 +3,11 @@ import { RouterLink, RouterView,useRouter } from 'vue-router'
 import { onMounted } from 'vue'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
-
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Pagination, Navigation, Autoplay } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/navigation'
 
 // 버튼 누르면 메인페이지로
 const router = useRouter()
@@ -17,6 +21,22 @@ onMounted(() => {
     offset: 0
   })
 })
+
+// Swiper 설정
+const swiperOptions = {
+  modules: [Pagination, Navigation, Autoplay],
+  slidesPerView: 1,
+  spaceBetween: 0,
+  loop: true,
+  autoplay: {
+    delay: 3000,
+    disableOnInteraction: false,
+  },
+  pagination: {
+    clickable: true,
+  },
+  navigation: true,
+}
 </script>
 
 <template>
@@ -159,74 +179,84 @@ onMounted(() => {
   </section> <!-- end s-about -->
 
   <section id="reviews" class="s-portfolio">
-      <div class="row s-porfolio__top">
-          <div class="column large-12 text-center">
-              <div class="section-title" data-num="02" data-aos="fade-up">
-                  <h3 class="h6">REVIEWS</h3>
-              </div>
-          </div>
-          <div class="column large-12 text-center">
-              <h2 class="display-1" data-aos="fade-up">
-                  영화 애호가들이 직접 경험한 특별한 순간들!
-              </h2>
-          </div>
-      </div>
-      <div class="row testimonials">
-          <div class="column large-12">
-            
-              <div class="testimonial-slider" data-aos="fade-up">
-                  <div class="testimonial-slider__slide">
-                      <p>
-                          “영화 기록을 한 곳에서 관리할 수 있어 정말 편리해요! 각 플랫폼에서 본 영화를 기억할 필요 없고, 일기처럼 감상평을 정리할 수 있어 더 의미 있어졌요. 영화 애호가들에게 딱 맞는 서비스입니다!”
-                      </p>
-                      <div class="testimonial-slider__author">
-                          <img src="@/assets/images/avatars/user-02.jpg" alt="Author image" class="testimonial-slider__avatar">
-                          <cite class="testimonial-slider__cite">
-                              <strong>Tim Cook</strong>
-                              <span>CEO, Apple</span>
-                          </cite>
-                      </div>
-                  </div>
-                  <div class="testimonial-slider__slide">
-                      <p>
-                          “AI 그림일기는 정말 독특하고 창의적이에요! 제 감상평이 예술 작품으로 변신하니 감상이 더 특별하게 느껴졌어요. SNS에 공유했더니 친구들도 정말 신기해하더군요.”
-                      </p>
-                      <div class="testimonial-slider__author">
-                          <img src="@/assets/images/avatars/user-01.jpg" alt="Author image" class="testimonial-slider__avatar">
-                          <cite class="testimonial-slider__cite">
-                              <strong>Sundar Pichai</strong>
-                              <span>CEO, Google</span>
-                          </cite>
-                      </div>
-                  </div>
-                  <div class="testimonial-slider__slide">
-                      <p>
-                          “단순한 장르 추천과는 차원이 다릅니다! 제가 좋아하는 감정을 기반으로 한 영화들이 추천되어 정말 만족스럽게 감상했어요. 감성적 울림이 있는 영화를 찾고 싶을 때 아주 유용해요.”
-                      </p>
-                      <div class="testimonial-slider__author">
-                          <img src="@/assets/images/avatars/user-04.jpg" alt="Author image" class="testimonial-slider__avatar">
-                          <cite class="testimonial-slider__cite">
-                              <strong>Satya Nadella</strong>
-                              <span>CEO, Microsoft</span>
-                          </cite>
-                      </div>
-                  </div>
-                  <div class="testimonial-slider__slide">
-                      <p>
-                          “감상평을 분석해 감정에 맞춘 영화를 추천해준다는 점이 너무 신선해요! 감정 상태에 따라 영화를 선택할 수 있어서 기분에 딱 맞는 작품을 감상할 수 있었어요. 매번 새로운 발견이 즐겁습니다!”
-                      </p>
-                      <div class="testimonial-slider__author">
-                          <img src="@/assets/images/avatars/user-05.jpg" alt="Author image" class="testimonial-slider__avatar">
-                          <cite class="testimonial-slider__cite">
-                              <strong>Jeff Bezos</strong>
-                              <span>CEO, Amazon</span>
-                          </cite>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+    <div class="row s-porfolio__top">
+        <div class="column large-12 text-center">
+            <div class="section-title" data-num="02" data-aos="fade-up">
+                <h3 class="h6">REVIEWS</h3>
+            </div>
+        </div>
+        <div class="column large-12 text-center">
+            <h2 class="display-1" data-aos="fade-up">
+                영화 애호가들이 직접 경험한 특별한 순간들!
+            </h2>
+        </div>
+    </div>
+    <div class="row testimonials">
+        <div class="column large-12">
+            <swiper
+                :modules="swiperOptions.modules"
+                :slides-per-view="swiperOptions.slidesPerView"
+                :space-between="swiperOptions.spaceBetween"
+                :loop="swiperOptions.loop"
+                :autoplay="swiperOptions.autoplay"
+                :pagination="swiperOptions.pagination"
+                :navigation="swiperOptions.navigation"
+                class="testimonial-slider"
+                data-aos="fade-up"
+            >
+                <!-- 슬라이드 항목들 -->
+                <swiper-slide class="testimonial-slider__slide">
+                    <p>
+                        “영화 기록을 한 곳에서 관리할 수 있어 정말 편리해요! 각 플랫폼에서 본 영화를 기억할 필요 없고, 일기처럼 감상평을 정리할 수 있어 더 의미 있어졌요. 영화 애호가들에게 딱 맞는 서비스입니다!”
+                    </p>
+                    <div class="testimonial-slider__author">
+                        <img src="@/assets/images/avatars/user-02.jpg" alt="Author image" class="testimonial-slider__avatar">
+                        <cite class="testimonial-slider__cite">
+                            <strong>Tim Cook</strong>
+                            <span>CEO, Apple</span>
+                        </cite>
+                    </div>
+                </swiper-slide>
+                <swiper-slide class="testimonial-slider__slide">
+                    <p>
+                        “AI 그림일기는 정말 독특하고 창의적이에요! 제 감상평이 예술 작품으로 변신하니 감상이 더 특별하게 느껴졌어요. SNS에 공유했더니 친구들도 정말 신기해하더군요.”
+                    </p>
+                    <div class="testimonial-slider__author">
+                        <img src="@/assets/images/avatars/user-01.jpg" alt="Author image" class="testimonial-slider__avatar">
+                        <cite class="testimonial-slider__cite">
+                            <strong>Sundar Pichai</strong>
+                            <span>CEO, Google</span>
+                        </cite>
+                    </div>
+                </swiper-slide>
+                <swiper-slide class="testimonial-slider__slide">
+                    <p>
+                        “단순한 장르 추천과는 차원이 다릅니다! 제가 좋아하는 감정을 기반으로 한 영화들이 추천되어 정말 만족스럽게 감상했어요. 감성적 울림이 있는 영화를 찾고 싶을 때 아주 유용해요.”
+                    </p>
+                    <div class="testimonial-slider__author">
+                        <img src="@/assets/images/avatars/user-04.jpg" alt="Author image" class="testimonial-slider__avatar">
+                        <cite class="testimonial-slider__cite">
+                            <strong>Satya Nadella</strong>
+                            <span>CEO, Microsoft</span>
+                        </cite>
+                    </div>
+                </swiper-slide>
+                <swiper-slide class="testimonial-slider__slide">
+                    <p>
+                        “감상평을 분석해 감정에 맞춘 영화를 추천해준다는 점이 너무 신선해요! 감정 상태에 따라 영화를 선택할 수 있어서 기분에 딱 맞는 작품을 감상할 수 있었어요. 매번 새로운 발견이 즐겁습니다!”
+                    </p>
+                    <div class="testimonial-slider__author">
+                        <img src="@/assets/images/avatars/user-05.jpg" alt="Author image" class="testimonial-slider__avatar">
+                        <cite class="testimonial-slider__cite">
+                            <strong>Jeff Bezos</strong>
+                            <span>CEO, Amazon</span>
+                        </cite>
+                    </div>
+                </swiper-slide>
+            </swiper>
+        </div>
+    </div>
+</section>
 
   <section id="portfolio" class="s-portfolio">
     <div class="row s-porfolio__top">
@@ -383,7 +413,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 필요한 스타일 파일들이 import 되어 있는지 확인 */
+/* 필요한 스타일 파일들 import 되어 있는지 확인 */
 @import '@/assets/css/vendor.css';
 @import '@/assets/css/styles.css';
 
@@ -400,4 +430,153 @@ onMounted(() => {
   }
 }
 
+/* Swiper 커스텀 스타일 */
+:deep(.swiper-pagination-bullet) {
+  background: #ffffff;
+  opacity: 0.5;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  opacity: 1;
+}
+
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  color: #ffffff;
+}
+
+.testimonial-slider {
+  position: relative;
+  width: 100%;
+  height: auto; /* 높이 자동 조정 */
+  padding-bottom: 40px;
+  overflow: visible; /* 잘리지 않도록 설정 */
+  display: flex;
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center; /* 수직 중앙 정렬 */
+}
+
+/* 슬라이드 스타일 */
+.testimonial-slider__slide {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* 수직 중앙 정렬 */
+  align-items: center; /* 수평 중앙 정렬 */
+  padding: 2rem;
+  min-height: 400px; /* 최소 높이 설정 */
+  box-sizing: border-box;
+}
+
+/* 텍스트 컨테이너 스타일 */
+.testimonial-slider__slide p {
+  font-size: 2.5rem; /* 5배로 키움 */
+  line-height: 1.8;
+  margin: 0 auto; /* 중앙 정렬 */
+  max-width: 80%; /* 최대 너비 제한 */
+  word-break: break-word; /* 긴 텍스트 줄바꿈 */
+  white-space: normal; /* 텍스트 줄바꿈 허용 */
+}
+
+/* 저자 정보 스타일 */
+.testimonial-slider__author {
+  margin-top: 2rem; /* 텍스트와 간격 추가 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.testimonial-slider__avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.testimonial-slider__cite {
+  text-align: left;
+  font-size: 2rem; /* 저자 정보 글씨 크기 증가 */
+}
+
+/* 반응형 스타일 */
+@media screen and (max-width: 768px) {
+  .testimonial-slider__slide {
+    padding: 1rem;
+    min-height: auto; /* 최소 높이 해제 */
+  }
+
+  .testimonial-slider__slide p {
+    font-size: 4rem; /* 모바일에서 글씨 크기 줄임 */
+    line-height: 1.6;
+  }
+
+  .testimonial-slider__cite {
+    font-size: 1.5rem; /* 저자 정보도 줄임 */
+  }
+}
+
+/* 추가 수정: 전체 정렬 보정 */
+.testimonial-slider__slide p {
+  display: block;
+  margin: 0 auto; /* 수평 중앙 정렬 */
+  text-align: center;
+}
+
+/* Swiper 네비게이션 버튼 위치 조정 */
+:deep(.swiper-button-prev),
+:deep(.swiper-button-next) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+:deep(.swiper-button-prev) {
+  left: 10px;
+}
+
+:deep(.swiper-button-next) {
+  right: 10px;
+}
+
+/* 반응형 스타일 */
+@media screen and (max-width: 768px) {
+  .testimonial-slider__slide {
+    padding: 1rem;
+    min-height: auto; /* 최소 높이 해제 */
+  }
+
+  .testimonial-slider__slide p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* 슬라이드 전환 효과 개선 */
+:deep(.swiper-slide) {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+:deep(.swiper-slide-active) {
+  opacity: 1;
+}
+
+/* 반응형 디자인 */
+@media screen and (max-width: 768px) {
+  .testimonial-slider__slide {
+    padding: 2rem;
+  }
+  
+  .testimonial-slider__slide p {
+    font-size: 1.4rem;
+  }
+}
+
+/* 추가 수정: 잘리지 않도록 설정 */
+.testimonial-slider__slide {
+  overflow: visible; /* 슬라이드 내부 내용이 잘리지 않도록 */
+}
+
+.swiper {
+  overflow: visible; /* 부모 컨테이너도 잘림 방지 */
+}
 </style>

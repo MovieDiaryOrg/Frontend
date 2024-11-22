@@ -5,7 +5,7 @@
       <nav class="flex items-center justify-between max-w-7xl mx-auto">
         <div class="flex items-center space-x-6">
           <router-link to="/main" class="text-sm hover:text-gray-600">Home</router-link>
-          <router-link to="/my-diary" class="text-sm hover:text-gray-600">My Diary</router-link>
+          <router-link to="/mydiary" class="text-sm hover:text-gray-600">My Diary</router-link>
         </div>
       </nav>
     </header>
@@ -19,12 +19,12 @@
           <div class="relative w-32 h-32">
             <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
               <img 
-                v-if="profileImagePreview || user.profileImage"
-                :src="profileImagePreview || user.profileImage" 
+                v-if="profileImage"
+                :src="profileImage"
                 alt="Profile Picture"
                 class="w-full h-full object-cover"
               />
-              <UserIcon v-else class="w-16 h-16 text-gray-400" />
+              <UserIcon v-else class="w-full h-full p-4 text-gray-400" />
             </div>
             <label for="profileImage" class="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer">
               <CameraIcon class="w-5 h-5" />
@@ -40,10 +40,10 @@
         </div>
 
         <div class="space-y-1">
-          <label for="name" class="block text-sm font-medium">이름</label>
+          <label for="firstName" class="block text-sm font-medium">이름</label>
           <input 
-            id="name" 
-            v-model="formData.name" 
+            id="firstName" 
+            v-model="formData.firstName" 
             type="text" 
             required
             class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
@@ -51,11 +51,11 @@
         </div>
 
         <div class="space-y-1">
-          <label for="phone" class="block text-sm font-medium">전화번호</label>
+          <label for="lastName" class="block text-sm font-medium">성</label>
           <input 
-            id="phone" 
-            v-model="formData.phone" 
-            type="tel" 
+            id="lastName" 
+            v-model="formData.lastName" 
+            type="text" 
             required
             class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
           />
@@ -73,20 +73,21 @@
         </div>
 
         <div class="space-y-1">
-          <label for="currentPassword" class="block text-sm font-medium">현재 비밀번호</label>
+          <label for="phone" class="block text-sm font-medium">전화번호</label>
           <input 
-            id="currentPassword" 
-            v-model="formData.currentPassword" 
-            type="password"
+            id="phone" 
+            v-model="formData.phone" 
+            type="tel" 
+            required
             class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
           />
         </div>
 
         <div class="space-y-1">
-          <label for="newPassword" class="block text-sm font-medium">새 비밀번호</label>
+          <label for="password" class="block text-sm font-medium">새 비밀번호</label>
           <input 
-            id="newPassword" 
-            v-model="formData.newPassword" 
+            id="password" 
+            v-model="formData.password" 
             type="password"
             class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
           />
@@ -125,36 +126,39 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { CameraIcon, UserIcon } from 'lucide-vue-next'
+import { CameraIcon, UserIcon, HeartIcon, MessageCircleIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
 
 const router = useRouter()
-const profileImagePreview = ref(null)
+const profileImage = ref(null)
 
 const user = ref({
-  name: '사용자1',
+  firstName: '사용자',
+  lastName: '1',
   phone: '010-1234-5678',
   email: 'admin1@ssafy.com',
-  profileImage: null
 })
 
 const formData = ref({
-  name: user.value.name,
+  firstName: user.value.firstName,
+  lastName: user.value.lastName,
   phone: user.value.phone,
   email: user.value.email,
-  currentPassword: '',
-  newPassword: '',
+  password: '',
   confirmPassword: '',
 })
 
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
-    profileImagePreview.value = URL.createObjectURL(file)
+    // Create a URL for the selected image file
+    profileImage.value = URL.createObjectURL(file)
+    // Here you would typically upload the file to a server and update the user's profile image
+    console.log('File selected:', file.name)
   }
 }
 
 const handleSubmit = () => {
-  if (formData.value.newPassword && formData.value.newPassword !== formData.value.confirmPassword) {
+  if (formData.value.password && formData.value.password !== formData.value.confirmPassword) {
     alert('새 비밀번호가 일치하지 않습니다.')
     return
   }
