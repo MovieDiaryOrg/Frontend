@@ -142,7 +142,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { CameraIcon, UserIcon, HeartIcon, MessageCircleIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
+import { signup } from '@/services/account'
 
 const router = useRouter()
 const username = ref('')
@@ -153,43 +153,35 @@ const lastName = ref('')
 const email = ref('')
 const phone = ref('')
 const profileImage = ref(null)
-const profileImagePreview = ref('')
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    profileImage.value = file
-    profileImagePreview.value = URL.createObjectURL(file)
-  }
-}
-
-const handleSignup = () => {
+const handleSignup = async () => {
   if (password.value !== confirmPassword.value) {
     alert('비밀번호가 일치하지 않습니다.')
     return
   }
-  
+
   const formData = new FormData()
   formData.append('username', username.value)
-  formData.append('password', password.value)
-  formData.append('firstName', firstName.value)
-  formData.append('lastName', lastName.value)
+  formData.append('password1', password.value)
+  formData.append('password2', confirmPassword.value)
+  formData.append('first_name', firstName.value)
+  formData.append('last_name', lastName.value)
   formData.append('email', email.value)
   formData.append('phone', phone.value)
   if (profileImage.value) {
-    formData.append('profileImage', profileImage.value)
+    formData.append('profile_image', profileImage.value)
   }
 
-  console.log('Signup attempt:', Object.fromEntries(formData))
-  
-  // Here you would typically call an API to register the user
-  // For example:
-  // await api.signup(formData)
-  
-  // For now, we'll just redirect to the login page
-  router.push('/login')
+  try {
+    const result = await signup(formData)
+    alert('회원가입 성공!')
+    router.push('/login')
+  } catch (error) {
+    alert('회원가입 실패: ' + error.response.data.message)
+  }
 }
 </script>
+
 
 <style scoped>
 input:-webkit-autofill,

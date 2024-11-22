@@ -77,14 +77,23 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCounterStore } from '@/stores/counter'
 
 const router = useRouter()
+const store = useCounterStore()
+
 const username = ref('')
 const password = ref('')
 
-const handleLogin = () => {
-  console.log('Login attempt:', { username: username.value, password: password.value })
-  router.push('/')
+const handleLogin = async () => {
+  const result = await store.login(username.value, password.value)
+
+  if (result.success) {
+    alert(result.message)
+    router.push('/main') // 로그인 성공 후 /main으로 이동
+  } else {
+    alert(result.message)
+  }
 }
 </script>
 
