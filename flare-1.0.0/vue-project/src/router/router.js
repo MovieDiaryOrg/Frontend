@@ -16,6 +16,7 @@ const routes = [
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } }, // 인증 필요
   { path: '/profile/edit', name: 'ProfileEdit', component: ProfileEdit, meta: { requiresAuth: true } }, // 인증 필요
   { path: '/mydiary', name: 'FilmMemoryView', component: FilmMemoryView, meta: { requiresAuth: true } }, // 인증 필요
+
 ];
 
 const router = createRouter({

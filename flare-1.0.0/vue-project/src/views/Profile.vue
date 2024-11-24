@@ -172,7 +172,7 @@
             취소
           </button>
           <button
-            @click="deleteAccount"
+            @click="handleDeleteAccount"
             class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300"
           >
             탈퇴 확인
@@ -186,6 +186,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getProfile, deleteAccountAPI } from '@/services/account'
 import { HeartIcon, MessageCircleIcon, UserIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
 import ReviewCard from '@/components/ReviewCard.vue'
 
@@ -237,22 +238,17 @@ const myComments = ref([
   }
 ])
 
-const deleteAccount = async () => {
+const handleDeleteAccount = async () => {
   try {
-    // Here you would typically make an API call to delete the user's account
-    // For example:
-    // await api.deleteAccount(user.value.id)
-
-    // For demonstration, we'll just simulate a successful deletion
-    console.log('Account deleted successfully')
-
-    // Redirect to the home page or login page after successful deletion
-    router.push('/login')
+    await deleteAccountAPI(); // 회원 탈퇴 API 호출
+    alert('회원 탈퇴가 완료되었습니다.');
+    localStorage.removeItem('access_token'); // 로컬 스토리지에서 토큰 삭제
+    router.push('/login'); // 로그인 페이지로 이동
   } catch (error) {
-    console.error('Error deleting account:', error)
-    // Handle error (e.g., show an error message to the user)
+    console.error('회원 탈퇴 실패:', error.response?.data || error);
+    alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
   }
-}
+};
 </script>
 
 <style scoped>

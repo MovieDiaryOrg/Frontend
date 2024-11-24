@@ -5,7 +5,7 @@
       <nav class="flex items-center justify-between max-w-7xl mx-auto">
         <div class="flex items-center space-x-6">
           <router-link to="/main" class="text-sm hover:text-gray-600">Home</router-link>
-          <router-link to="/my-diary" class="text-sm hover:text-gray-600">My Diary</router-link>
+          <router-link to="/mydiary" class="text-sm hover:text-gray-600">My Diary</router-link>
         </div>
       </nav>
     </header>
@@ -140,47 +140,58 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { signup } from '@/services/account'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { signup } from '@/services/account';
 
-const router = useRouter()
-const username = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const firstName = ref('')
-const lastName = ref('')
-const email = ref('')
-const phone = ref('')
-const profileImage = ref(null)
+const router = useRouter();
+const username = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const firstName = ref('');
+const lastName = ref('');
+const email = ref('');
+const phone = ref('');
+const profileImage = ref(null);
 
 const handleSignup = async () => {
   if (password.value !== confirmPassword.value) {
-    alert('비밀번호가 일치하지 않습니다.')
-    return
+    alert('비밀번호가 일치하지 않습니다.');
+    return;
   }
 
-  const formData = new FormData()
-  formData.append('username', username.value)
-  formData.append('password1', password.value)
-  formData.append('password2', confirmPassword.value)
-  formData.append('first_name', firstName.value)
-  formData.append('last_name', lastName.value)
-  formData.append('email', email.value)
-  formData.append('phone', phone.value)
+  const formData = new FormData();
+  formData.append('username', username.value);
+  formData.append('password1', password.value);
+  formData.append('password2', confirmPassword.value);
+  formData.append('first_name', firstName.value);
+  formData.append('last_name', lastName.value);
+  formData.append('email', email.value);
+  formData.append('phone', phone.value);
   if (profileImage.value) {
-    formData.append('profile_image', profileImage.value)
+    formData.append('profile_image', profileImage.value);
   }
 
   try {
-    const result = await signup(formData)
-    alert('회원가입 성공!')
-    router.push('/login')
+    const result = await signup(formData);
+    alert('회원가입 성공!');
+    router.push('/login');
   } catch (error) {
-    alert('회원가입 실패: ' + error.response.data.message)
+    // username 관련 에러 처리
+    const data = error.response?.data;
+
+    let userMessage = '회원가입에 실패했습니다.';
+    if (data?.username) {
+      // username 에러 메시지 표시
+      userMessage = data.username.join(' ');
+    }
+
+    alert(userMessage);
   }
-}
+};
+
 </script>
+
 
 
 <style scoped>
