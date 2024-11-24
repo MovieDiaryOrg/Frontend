@@ -82,7 +82,15 @@
             class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
           />
         </div>
-
+        <div class="space-y-1">
+          <label for="currentPassword" class="block text-sm font-medium">현재 비밀번호</label>
+          <input 
+            id="currentPassword" 
+            v-model="formData.currentPassword" 
+            type="password" 
+            class="w-full px-3 py-2 border-b border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent"
+          />
+        </div>
         <div class="space-y-1">
           <label for="password" class="block text-sm font-medium">새 비밀번호</label>
           <input 
@@ -124,51 +132,96 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { CameraIcon, UserIcon, HeartIcon, MessageCircleIcon, UsersIcon, UserPlusIcon, SettingsIcon } from 'lucide-vue-next'
+import { getProfile, updateProfile } from '@/services/account'
+import { CameraIcon, UserIcon } from 'lucide-vue-next'
 
 const router = useRouter()
 const profileImage = ref(null)
+const profileImageFile = ref(null) // 실제 파일 데이터 저장
 
-const user = ref({
-  firstName: '사용자',
-  lastName: '1',
-  phone: '010-1234-5678',
-  email: 'admin1@ssafy.com',
-})
-
+// Form 데이터 초기화
 const formData = ref({
-  firstName: user.value.firstName,
-  lastName: user.value.lastName,
-  phone: user.value.phone,
-  email: user.value.email,
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
   password: '',
   confirmPassword: '',
+  currentPassword: '', 
 })
 
+// 사용자 정보 가져오기
+const fetchUserProfile = async () => {
+  try {
+    const profile = await getProfile()
+    formData.value.firstName = profile.first_name || ''
+    formData.value.lastName = profile.last_name || ''
+    formData.value.phone = profile.phone || ''
+    formData.value.email = profile.email || ''
+    profileImage.value = profile.profile_image || null // 프로필 이미지 URL 설정
+  } catch (error) {
+    console.error('사용자 정보 가져오기 실패:', error.response?.data || error)
+    alert('사용자 정보를 불러오지 못했습니다. 다시 시도해주세요.')
+    router.push('/login')
+  }
+}
+
+// 컴포넌트 마운트 시 사용자 정보 가져오기
+onMounted(() => {
+  fetchUserProfile()
+})
+
+// 프로필 이미지 업로드
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
   if (file) {
-    // Create a URL for the selected image file
-    profileImage.value = URL.createObjectURL(file)
-    // Here you would typically upload the file to a server and update the user's profile image
+    profileImage.value = URL.createObjectURL(file) // 미리보기용 URL 생성
+    profileImageFile.value = file // 실제 파일 저장
     console.log('File selected:', file.name)
   }
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (formData.value.password && formData.value.password !== formData.value.confirmPassword) {
     alert('새 비밀번호가 일치하지 않습니다.')
     return
   }
 
-  console.log('Profile update:', formData.value)
-  // Here you would typically call an API to update the user profile
-  // For now, we'll just redirect back to the profile page
-  router.push('/profile')
+  try {
+    const formDataToSend = new FormData()
+    formDataToSend.append('first_name', formData.value.firstName)
+    formDataToSend.append('last_name', formData.value.lastName)
+    formDataToSend.append('phone', formData.value.phone)
+    formDataToSend.append('email', formData.value.email)
+
+    // 새 비밀번호와 현재 비밀번호 추가
+    if (formData.value.password) {
+      formDataToSend.append('new_password1', formData.value.password)
+      formDataToSend.append('new_password2', formData.value.confirmPassword)
+      formDataToSend.append('current_password', formData.value.currentPassword) // 현재 비밀번호 추가
+    }
+
+    // 프로필 이미지가 있을 경우 추가
+    if (profileImageFile.value) {
+      formDataToSend.append('profile_image', profileImageFile.value)
+    }
+
+    // API 호출
+    await updateProfile(formDataToSend)
+
+    alert('회원정보가 성공적으로 수정되었습니다.')
+    router.push('/profile')
+  } catch (error) {
+    console.error('회원정보 수정 실패:', error.response?.data || error)
+    alert('회원정보 수정에 실패했습니다. 다시 시도해주세요.')
+  }
 }
+
 </script>
+
+
 
 <style scoped>
 input:-webkit-autofill,
