@@ -84,84 +84,29 @@
       </div>
 
       <!-- AI Recommendations Section -->
-      <section class="mt-16">
-        <div class="flex items-center mb-6">
-          <AtomIcon class="w-6 h-6 text-blue-500 mr-2" />
-          <h2 class="text-2xl font-bold">AI가 추천해주는 다른 영화</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="recommendation in film.recommended"
-            :key="recommendation.movie.tmdb_id"
-            class="bg-gray-50 rounded-lg p-4 transition-transform hover:scale-105 cursor-pointer"
-            @click="openRecommendationModal(recommendation)"
-          >
-            <img
-              :src="recommendation.movie.poster_path"
-              :alt="recommendation.movie.title"
-              class="w-full h-48 object-cover rounded-lg mb-4"
-            />
-            <h3 class="font-bold text-lg mb-2">{{ recommendation.movie.title }}</h3>
-            <div class="flex items-center text-sm text-gray-600 mb-2">
-              <CalendarIcon class="w-4 h-4 mr-1" />
-              <span>{{ formatDate(recommendation.movie.release_date) }}</span>
-            </div>
-            <div class="flex items-center text-sm mb-3">
-              <StarIcon class="w-4 h-4 text-yellow-500 mr-1" />
-              <span>{{ recommendation.movie.vote_average }}</span>
-            </div>
-            <p class="text-sm text-gray-600">{{ recommendation.reason }}</p>
-          </div>
-        </div>
-      </section>
+      <button @click="$emit('get-recommendations')" class="mt-4 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-semibold">
+          <AtomIcon class="w-6 h-6" />
+          <span class="text-lg">AI가 추천해주는 다른 영화</span>
+      </button>
 
       <!-- Comments Section -->
-      <section class="mt-16">
-        <h2 class="text-2xl font-bold mb-6">댓글</h2>
-        <div class="bg-gray-50 rounded-lg p-4 shadow-inner">
-          <div class="h-64 overflow-y-auto space-y-4 mb-4">
-            <div 
-              v-for="comment in film.comments" 
-              :key="comment.id"
-              class="flex items-start space-x-4 bg-white p-4 rounded-lg shadow"
-            >
-              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-                <UserIcon class="w-6 h-6 text-gray-600" />
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <p class="font-medium">{{ comment.author }}</p>
-                  <p class="text-sm text-gray-500">{{ formatDate(comment.createdAt) }}</p>
-                </div>
-                <p class="text-gray-700">{{ comment.content }}</p>
+      <section class="mt-8">
+        <h2 class="text-2xl font-bold mb-4">댓글</h2>
+        <div class="bg-gray-100 p-4 rounded-lg">
+          <div class="space-y-4">
+            <div v-for="comment in film.comments" :key="comment.id" class="flex items-start space-x-4">
+              <img :src="placeholderImage" alt="Profile" class="w-10 h-10 rounded-full" />
+              <div>
+                <p class="font-medium text-gray-800">{{ comment.author }}</p>
+                <p class="text-gray-600 mt-1">{{ comment.content }}</p>
               </div>
             </div>
           </div>
-
-          <!-- Comment Input -->
-          <div class="flex items-start space-x-4 mt-4">
-            <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-              <UserIcon class="w-6 h-6 text-gray-600" />
-            </div>
-            <div class="flex-1">
-              <textarea
-                v-model="newCommentContent"
-                placeholder="댓글을 작성해보세요..."
-                rows="3"
-                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500"
-                @keydown.ctrl.enter="addComment"
-              ></textarea>
-              <div class="mt-2 flex justify-between items-center">
-                <p class="text-sm text-gray-500">Ctrl+Enter를 눌러 댓글을 게시하세요</p>
-                <button 
-                  @click="addComment"
-                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  :disabled="!newCommentContent || newCommentContent.trim().length === 0"
-                >
-                  댓글 작성
-                </button>
-              </div>
-            </div>
+          <div class="mt-6 flex items-center">
+            <input v-model="newComment" placeholder="댓글 작성..." class="flex-1 mb-2 px-4 py-2 border rounded-md bg-white" />
+            <button @click="addComment" class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400">
+              <MessageCircleIcon class="w-5 h-5" />
+            </button>
           </div>
         </div>
       </section>
@@ -183,14 +128,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import {
   StarIcon,
   HeartIcon,
   MessageCircleIcon,
   ChevronLeftIcon,
   AtomIcon,
-  UserIcon,
   UserPlusIcon,
   CalendarIcon,
   Loader2Icon,
@@ -201,28 +145,38 @@ const props = defineProps({
   film: { type: Object, required: true },
 });
 
-const emit = defineEmits(['close', 'edit-film', 'delete-film', 'add-comment']);
+const emit = defineEmits(['close', 'edit-film', 'delete-film', 'add-comment', 'get-recommendations']);
 
-const newCommentContent = ref('');
+const newComment = ref('');
 const isLiked = ref(false);
 const isFollowing = ref(false);
 const showRecommendationsModal = ref(false);
 const selectedRecommendation = ref([]);
 
+const placeholderImage = computed(() => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+      <rect width="100%" height="100%" fill="#e0e0e0"/>
+      <text x="50%" y="50%" font-family="Arial" font-size="12" fill="#666" dominant-baseline="middle" text-anchor="middle">
+        User
+      </text>
+    </svg>
+  `;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+});
+
 const handleLike = () => {
   isLiked.value = !isLiked.value;
-  // Here you would typically make an API call to update the like status
 };
 
 const handleFollow = () => {
   isFollowing.value = !isFollowing.value;
-  // Here you would typically make an API call to update the follow status
 };
 
 const addComment = () => {
-  if (newCommentContent.value && newCommentContent.value.trim()) {
-    emit('add-comment', { content: newCommentContent.value.trim(), filmId: props.film.id });
-    newCommentContent.value = '';
+  if (newComment.value.trim()) {
+    emit('add-comment', newComment.value);
+    newComment.value = '';
   }
 };
 
@@ -233,49 +187,18 @@ const formatDate = (dateString) => {
 };
 
 const openRecommendationModal = (recommendation) => {
-  selectedRecommendation.value = [{
-    title: recommendation.movie.title,
-    poster: recommendation.movie.poster_path,
-    releaseDate: recommendation.movie.release_date,
-    rating: recommendation.movie.vote_average,
-    plot: recommendation.movie.overview || '설명이 없습니다.',
-    reason: recommendation.reason
-  }];
+  selectedRecommendation.value = props.film.recommended.map((rec) => ({
+    title: rec.movie.title,
+    poster: rec.movie.poster_path,
+    releaseDate: rec.movie.release_date,
+    rating: parseFloat(rec.movie.vote_average),
+    plot: rec.movie.description || '설명이 없습니다.',
+    reason: rec.reason,
+  }));
   showRecommendationsModal.value = true;
 };
 
 const closeRecommendationModal = () => {
   showRecommendationsModal.value = false;
 };
-
-onMounted(() => {
-  // Initialize any necessary data or state here
-});
 </script>
-
-<style scoped>
-/* Scrollbar styles for WebKit browsers */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 8px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Scrollbar styles for Firefox */
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
-}
-</style>

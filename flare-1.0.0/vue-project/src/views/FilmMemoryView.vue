@@ -85,23 +85,22 @@ const fetchFilms = async () => {
   try {
     const response = await fetchUserMovies(); // 사용자 전체 영화 리스트 API 호출
     films.value = response.map((film) => ({
-      id: film.id, // 영화 기록의 고유 PK
-      title: film.movie, // 영화 제목
-      image: film.ai_img || '/placeholder.svg', // AI 이미지 또는 기본 이미지
-      content: film.content, // 감상문
-      rating: parseFloat(film.evaluation), // 평점
+      id: film.data.id, // 영화 기록의 고유 PK
+      title: film.title, // 영화 제목
+      image: film.data.ai_img || '/placeholder.svg', // AI 이미지 또는 기본 이미지
+      content: film.data.content, // 감상문
+      rating: parseFloat(film.data.evaluation), // 평점
       likes: film.likes, // 좋아요 수
-      comments: film.comments || [], // 댓글 배열
-      watchedDate: film.watched_date, // 시청 날짜
-      createdDate: film.created_at, // 생성 날짜
-      modifiedDate: film.modified_at, // 수정 날짜
+      comments: film.comments, // 댓글 배열
+      watchedDate: film.data.watched_date, // 시청 날짜
+      createdDate: film.data.created_at, // 생성 날짜
+      modifiedDate: film.data.modified_at, // 수정 날짜
     }));
     console.log('영화 데이터:', films.value);
   } catch (error) {
     console.error('영화 목록을 가져오는 중 오류 발생:', error);
   }
 };
-
 
 // 컴포넌트가 마운트될 때 영화 데이터 가져오기
 onMounted(() => {
@@ -132,18 +131,27 @@ const selectFilm = async (id) => {
       content: filmDetail.content,
       rating: parseFloat(filmDetail.evaluation),
       likes: filmDetail.likes,
-      comments: filmDetail.comments || [],
+      comments: (filmDetail.comments || []).length,
       watchedDate: filmDetail.watched_date,
       createdDate: filmDetail.created_at,
       modifiedDate: filmDetail.modified_at,
+      recommendedMovies: (filmDetail.recommended || []).map((rec) => ({
+        id: rec.movie.tmdb_id,
+        title: rec.movie.title,
+        description: rec.movie.description,
+        releaseDate: rec.movie.release_date,
+        poster: rec.movie.poster_path,
+        voteAverage: parseFloat(rec.movie.vote_average),
+        reason: rec.reason,
+      })),
     };
 
     console.log('선택된 영화 상세 정보:', selectedFilm.value);
+    recommendedMovies.value = selectedFilm.value.recommendedMovies; // 추천 영화 데이터 설정
   } catch (error) {
     console.error('영화 상세 조회 중 오류 발생:', error);
   }
 };
-
 
 // 새 영화 등록 로직
 const addNewFilm = (newFilm) => {
@@ -165,34 +173,14 @@ const addComment = (newComment) => {
 
 // 추천 영화 로직
 const getRecommendations = () => {
-  recommendedMovies.value = [
-    {
-      title: '인셉션',
-      poster: '/placeholder.svg?height=400&width=300',
-      releaseDate: '2010-07-21',
-      rating: 4.8,
-      plot: '꿈과 현실의 경계를 넘나드는 액션 블록버스터',
-      reason: '복잡한 플롯과 심리적 탐구를 좋아하시는 것 같아 추천드립니다.',
-    },
-    {
-      title: '메멘토',
-      poster: '/placeholder.svg?height=400&width=300',
-      releaseDate: '2000-09-05',
-      rating: 4.6,
-      plot: '기억상실증 환자의 복수극',
-      reason: '비선형적 내러티브와 심리적 서스펜스를 즐기실 것 같습니다.',
-    },
-    {
-      title: '어바웃 타임',
-      poster: '/placeholder.svg?height=400&width=300',
-      releaseDate: '2013-09-04',
-      rating: 4.5,
-      plot: '시간을 되돌릴 수 있는 능력을 가진 남자의 로맨스',
-      reason: '인생의 소중한 순간들에 대한 깊은 통찰을 담고 있어 추천드립니다.',
-    },
-  ];
-  showRecommendations.value = true;
+  if (selectedFilm.value && selectedFilm.value.recommendedMovies) {
+    recommendedMovies.value = selectedFilm.value.recommendedMovies;
+    showRecommendations.value = true;
+  } else {
+    console.error('No recommendations available for this film');
+  }
 };
+
 </script>
 
 <style scoped>
