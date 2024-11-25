@@ -1,6 +1,9 @@
+<!-- components/FeaturedFilm.vue -->
+
+
 <template>
   <section>
-    <h2 class="text-2xl font-bold mb-6">오늘 가장 많이 받은 영화</h2>
+    <h2 class="text-2xl font-bold mb-6">오늘의 영화</h2>
     <div class="bg-gray-100 p-6 rounded-2xl">
       <img 
         :src="film.image" 

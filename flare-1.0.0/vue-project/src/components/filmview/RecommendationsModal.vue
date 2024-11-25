@@ -1,3 +1,6 @@
+<!-- components/filmview/RecommendationsModal.vue -->
+
+
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto">
     <div class="bg-white rounded-lg p-8 w-full max-w-4xl m-4 relative">

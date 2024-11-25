@@ -1,3 +1,6 @@
+<!-- components/filmview/FilmList.vue -->
+
+
 <template>
   <div>
     <div class="flex justify-between items-center mb-8">

@@ -1,15 +1,15 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { StarIcon } from 'lucide-vue-next'
+import { ref, watch } from 'vue';
+import { addMovieDiary, fetchMovieDetail } from '@/services/diary.js';
 
 // props 정의
 const props = defineProps({
   mode: { type: String, default: 'add' }, // 'add' 또는 'edit'
   initialFilm: { type: Object, default: () => ({}) } // 수정 모드의 초기 데이터
-})
+});
 
 // emit 정의
-const emit = defineEmits(['close', 'add-film', 'update-film'])
+const emit = defineEmits(['close', 'show-detail']); // 상세 페이지 렌더링 이벤트 추가
 
 // 영화 데이터 상태
 const film = ref({
@@ -17,14 +17,14 @@ const film = ref({
   rating: 0,
   description: '',
   watched_date: new Date().toISOString().substr(0, 10)
-})
+});
 
 // props를 watch하여 초기 데이터를 설정
 watch(
   () => props.initialFilm,
   (newFilm) => {
     if (props.mode === 'edit' && newFilm) {
-      film.value = { ...newFilm }
+      film.value = { ...newFilm };
     } else if (props.mode === 'add') {
       // 새로운 데이터를 초기화
       film.value = {
@@ -32,27 +32,43 @@ watch(
         rating: 0,
         description: '',
         watched_date: new Date().toISOString().substr(0, 10)
-      }
+      };
     }
   },
   { immediate: true }
-)
+);
 
-// 등록 또는 수정 완료 버튼 로직
-const handleSubmit = () => {
+// 등록 버튼 로직
+const handleSubmit = async () => {
   if (!film.value.title || !film.value.rating) {
-    alert('제목과 평점을 모두 입력해주세요.')
-    return
+    alert('제목과 평점을 모두 입력해주세요.');
+    return;
   }
 
-  if (props.mode === 'add') {
-    emit('add-film', { ...film.value }) // 새로운 영화 추가
-  } else if (props.mode === 'edit') {
-    emit('update-film', { ...film.value }) // 기존 영화 수정
-  }
+  const movieData = {
+    content: film.value.description,
+    watched_date: film.value.watched_date,
+    movie: film.value.title,
+    evaluation: film.value.rating
+  };
 
-  emit('close')
-}
+  try {
+    // 영화 등록 API 호출
+    const registeredFilm = await addMovieDiary(movieData);
+
+    // 등록된 영화 ID로 상세 정보 조회
+    const filmDetail = await fetchMovieDetail(registeredFilm.movie_journal.id);
+
+    // 부모 컴포넌트로 상세 페이지 렌더링 이벤트 전달
+    emit('show-detail', filmDetail.movie_journal);
+
+    // 모달 닫기 이벤트 발생
+    emit('close');
+  } catch (error) {
+    alert('영화 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    console.error(error);
+  }
+};
 </script>
 
 <template>
@@ -100,12 +116,15 @@ const handleSubmit = () => {
           <div class="space-y-1 flex-1">
             <label class="block text-sm font-medium text-gray-700">평가</label>
             <div class="flex items-center">
-              <StarIcon
+              <div
                 v-for="i in 5"
                 :key="i"
-                :class="['w-10 h-10 cursor-pointer transition-colors', i <= film.rating ? 'text-yellow-500' : 'text-gray-300']"
                 @click="film.rating = i"
-              />
+                :class="[
+                  'w-10 h-10 cursor-pointer transition-colors',
+                  i <= film.rating ? 'text-yellow-500' : 'text-gray-300'
+                ]"
+              >★</div>
               <span class="ml-2 text-xl">{{ film.rating || 0 }}점</span>
             </div>
           </div>
