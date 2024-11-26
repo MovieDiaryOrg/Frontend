@@ -5,8 +5,10 @@ import Login from '@/views/Login.vue';
 import Signup from '@/views/Signup.vue';
 import Profile from '@/views/Profile.vue';
 import ProfileEdit from '@/views/ProfileEdit.vue';
+import FilmMyMemoryView from '@/views/FilmMyMemoryView.vue';
 import FilmMemoryView from '@/views/FilmMemoryView.vue';
 import { useCounterStore } from '@/stores/counter';
+
 
 const routes = [
   { path: '/', component: IntroPage }, // IntroPage 경로
@@ -15,8 +17,8 @@ const routes = [
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } }, // 인증 필요
   { path: '/profile/edit', name: 'ProfileEdit', component: ProfileEdit, meta: { requiresAuth: true } }, // 인증 필요
-  { path: '/mydiary', name: 'FilmMemoryView', component: FilmMemoryView, meta: { requiresAuth: true } }, // 인증 필요
-
+  { path: '/mydiary', name: 'FilmMyMemoryView', component: FilmMyMemoryView, meta: { requiresAuth: true } }, // 인증 필요
+  { path: '/:user_pk/diary/', name: 'FilmMemoryView', component: FilmMemoryView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

@@ -17,18 +17,20 @@
       <form @submit.prevent="handleSignup" class="space-y-6">
         <div class="flex justify-center mb-6">
           <div class="relative w-32 h-32">
-            <div v-if="profileImagePreview" class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
               <img 
+                v-if="profileImagePreview" 
                 :src="profileImagePreview" 
                 alt="Profile Picture" 
                 class="w-full h-full object-cover"
               />
+              <UserIcon v-else class="w-16 h-16 text-gray-400" />
             </div>
-            <div v-else class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              <UserIcon class="w-16 h-16 text-gray-400" />
-            </div>
-            <label for="profileImage" class="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer">
-              <CameraIcon class="h-5 w-5" />
+            <label 
+              for="profileImage" 
+              class="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors"
+            >
+              <PlusIcon class="h-5 w-5" />
             </label>
             <input 
               id="profileImage" 
@@ -142,6 +144,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { UserIcon, PlusIcon } from 'lucide-vue-next';
 import { signup } from '@/services/account';
 
 const router = useRouter();
@@ -153,6 +156,19 @@ const lastName = ref('');
 const email = ref('');
 const phone = ref('');
 const profileImage = ref(null);
+const profileImagePreview = ref(null);
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    profileImage.value = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      profileImagePreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
 const handleSignup = async () => {
   if (password.value !== confirmPassword.value) {
@@ -177,22 +193,15 @@ const handleSignup = async () => {
     alert('회원가입 성공!');
     router.push('/login');
   } catch (error) {
-    // username 관련 에러 처리
     const data = error.response?.data;
-
     let userMessage = '회원가입에 실패했습니다.';
     if (data?.username) {
-      // username 에러 메시지 표시
       userMessage = data.username.join(' ');
     }
-
     alert(userMessage);
   }
 };
-
 </script>
-
-
 
 <style scoped>
 input:-webkit-autofill,

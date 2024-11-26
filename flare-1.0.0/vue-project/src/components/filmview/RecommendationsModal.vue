@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto relative shadow-xl">
+    <div class="bg-white rounded-lg w-[800px] max-h-[80vh] overflow-y-auto relative shadow-xl">
       <div class="p-6">
         <div class="flex justify-between items-center mb-6 border-b pb-4">
           <div class="flex items-center">
@@ -25,7 +25,7 @@
             <img 
               :src="movie.poster || '/placeholder.svg?height=120&width=80'" 
               :alt="movie.title"
-              class="w-20 h-30 object-cover rounded shadow"
+              class="w-28 h-30 object-cover rounded shadow"
             />
             <div class="flex-1 min-w-0">
               <h3 class="font-bold text-lg mb-1 flex items-center">
