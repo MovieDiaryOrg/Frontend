@@ -135,11 +135,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getProfile, updateProfile } from '@/services/account'
+import { useCounterStore } from '@/stores/counter'
 import { CameraIcon, UserIcon } from 'lucide-vue-next'
 
 const router = useRouter()
 const profileImage = ref(null)
 const profileImageFile = ref(null) // 실제 파일 데이터 저장
+const store = useCounterStore()
 
 // Form 데이터 초기화
 const formData = ref({
@@ -209,7 +211,8 @@ const handleSubmit = async () => {
     }
 
     // API 호출
-    await updateProfile(formDataToSend)
+    const response = await updateProfile(formDataToSend)
+    await store.fetchUser(response);
 
     alert('회원정보가 성공적으로 수정되었습니다.')
     router.push('/profile')

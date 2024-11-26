@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-hidden whitespace-nowrap mb-16 border-y py-4">
     <div class="animate-scroll-text inline-block">
-      <span class="text-lg">— Film of the Day — {{ currentDate }} — Film of the Day — {{ currentDate }} —&nbsp;</span>
+      <span class="text-lg" style="font-style:italic; color: gray;">ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ- Record your movie moments to create your own personalized memory sculpture -&nbsp;</span>
     </div>
   </div>
 </template>
