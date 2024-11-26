@@ -47,7 +47,7 @@
         </div>
         <div class="flex items-center">
           <MessageCircleIcon class="w-6 h-6 text-blue-500 mr-2" />
-          <span class="text-xl font-semibold">{{ film.comments.length }}</span>
+          <span class="text-xl font-semibold">{{ comments.length }}</span>
         </div>
       </div>
 
@@ -84,26 +84,27 @@
       </div>
 
       <!-- AI Recommendations Section -->
-      <button @click="$emit('get-recommendations')" class="mt-4 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-semibold">
+      <button @click="openRecommendationModal" class="mt-4 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-semibold">
           <AtomIcon class="w-6 h-6" />
           <span class="text-lg">AI가 추천해주는 다른 영화</span>
       </button>
 
       <!-- Comments Section -->
-      <!-- Comments Section -->
       <section class="mt-8">
         <h2 class="text-2xl font-bold mb-4">댓글</h2>
         <div class="bg-gray-100 p-4 rounded-lg">
           <div class="space-y-4">
-            <div v-for="comment in film.comments" :key="comment.id" class="flex items-start space-x-4">
-              <img :src="placeholderImage" alt="Profile" class="w-10 h-10 rounded-full" />
+            <div v-for="comment in comments" :key="comment.id" class="flex items-start space-x-4">
+              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                <UserIcon class="w-6 h-6 text-gray-600" />
+              </div>
               <div class="flex-1">
-                <p class="font-medium text-gray-800">{{ comment.author }}</p>
+                <p class="font-medium text-gray-800">{{ comment.username.username }}</p>
                 <p class="text-gray-600 mt-1">{{ comment.content }}</p>
               </div>
               <div class="flex space-x-2">
-                <button @click="handleEditComment(comment.id, '수정된 댓글')" class="text-blue-500 hover:underline">수정</button>
-                <button @click="handleDeleteComment(comment.id)" class="text-red-500 hover:underline">삭제</button>
+                <button @click="() => handleEditComment(comment.id)" class="text-blue-500 hover:underline">수정</button>
+                <button @click="() => handleDeleteComment(comment.id)" class="text-red-500 hover:underline">삭제</button>
               </div>
             </div>
           </div>
@@ -112,15 +113,18 @@
               v-model="newComment"
               placeholder="댓글 작성..."
               class="flex-1 mb-2 px-4 py-2 border rounded-md bg-white"
+              @keyup.enter="submitComment"
             />
-            <button @click="addComment" class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400">
+            <button 
+              @click="submitComment" 
+              class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label="댓글 등록"
+            >
               <MessageCircleIcon class="w-5 h-5" />
             </button>
           </div>
         </div>
       </section>
-
-
     </div>
 
     <!-- RecommendationsModal -->
@@ -156,22 +160,20 @@ import {
   ChevronLeftIcon,
   AtomIcon,
   UserPlusIcon,
-  CalendarIcon,
+  UserIcon,
   Loader2Icon,
 } from 'lucide-vue-next';
 import RecommendationsModal from './RecommendationsModal.vue';
 import AddEditModal from './AddEditModal.vue';
-import { updateMovieDiary } from '@/services/diary';
-import { deleteMovieDiary } from '@/services/diary';
-import { addCommentToDiary, updateComment, deleteComment } from '@/services/diary';
-
+import { updateMovieDiary, deleteMovieDiary, addCommentToDiary, updateComment, deleteComment } from '@/services/diary';
 
 const props = defineProps({
   film: { type: Object, required: true },
 });
 
-const emit = defineEmits(['close', 'delete-film', 'add-comment', 'get-recommendations', 'update-film', 'delete-film']);
+const emit = defineEmits(['close', 'delete-film', 'update-film']);
 
+const comments = ref(props.film.comments || []);
 const newComment = ref('');
 const isLiked = ref(false);
 const isFollowing = ref(false);
@@ -179,27 +181,15 @@ const showRecommendationsModal = ref(false);
 const showEditModal = ref(false);
 const selectedRecommendation = ref([]);
 
-const placeholderImage = computed(() => {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-      <rect width="100%" height="100%" fill="#e0e0e0"/>
-      <text x="50%" y="50%" font-family="Arial" font-size="12" fill="#666" dominant-baseline="middle" text-anchor="middle">
-        User
-      </text>
-    </svg>
-  `;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-});
-
 const handleLike = () => {
   isLiked.value = !isLiked.value;
+  // TODO: Implement like functionality with API
 };
 
 const handleFollow = () => {
   isFollowing.value = !isFollowing.value;
+  // TODO: Implement follow functionality with API
 };
-
-
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -207,15 +197,15 @@ const formatDate = (dateString) => {
   return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
 };
 
-const openRecommendationModal = (recommendation) => {
-  selectedRecommendation.value = props.film.recommended.map((rec) => ({
+const openRecommendationModal = () => {
+  selectedRecommendation.value = props.film.recommended?.map((rec) => ({
     title: rec.movie.title,
     poster: rec.movie.poster_path,
     releaseDate: rec.movie.release_date,
     rating: parseFloat(rec.movie.vote_average),
     plot: rec.movie.description || '설명이 없습니다.',
     reason: rec.reason,
-  }));
+  })) || [];
   showRecommendationsModal.value = true;
 };
 
@@ -231,22 +221,10 @@ const closeEditModal = () => {
   showEditModal.value = false;
 };
 
-
 const handleUpdateFilm = async (updatedFilm) => {
   try {
-    // API 호출
     const response = await updateMovieDiary(props.film.id, updatedFilm);
-
-    // 로컬 상태 업데이트
-    props.film.title = response.title;
-    props.film.content = response.movie_journal.content;
-    props.film.watchedDate = response.movie_journal.watched_date;
-    props.film.rating = parseFloat(response.movie_journal.evaluation);
-    props.film.modifiedDate = response.movie_journal.modified_at;
-
-    console.log('수정된 영화 데이터:', response);
-
-    // 모달 닫기
+    emit('update-film', response);
     closeEditModal();
   } catch (error) {
     console.error('영화 수정 중 오류 발생:', error);
@@ -255,71 +233,74 @@ const handleUpdateFilm = async (updatedFilm) => {
 };
 
 const handleDelete = async () => {
-  try {
-    if (confirm(`정말로 "${props.film.title}" 영화를 삭제하시겠습니까?`)) {
-      await deleteMovieDiary(props.film.id); // API 호출
-      alert('영화가 성공적으로 삭제되었습니다.');
-      emit('delete-film', props.film.id); // 부모 컴포넌트에 삭제 이벤트 전달
+  if (confirm(`정말로 "${props.film.title}" 영화를 삭제하시겠습니까?`)) {
+    try {
+      await deleteMovieDiary(props.film.id);
+      emit('delete-film', props.film.id);
+    } catch (error) {
+      console.error('삭제 중 오류 발생:', error);
+      alert('영화 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-  } catch (error) {
-    console.error('삭제 중 오류 발생:', error);
-    alert('영화 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
 
-// const addComment = () => {
-//   if (newComment.value.trim()) {
-//     emit('add-comment', newComment.value);
-//     newComment.value = '';
-//   }
-// };
-
-const addComment = async () => {
-  if (!newComment.value.trim()) return; // 입력값 확인
-
+const submitComment = async () => {
+  // 댓글 입력 값이 비어 있으면 알림
+  if (!newComment.value.trim()) {
+    alert('댓글 내용을 입력해주세요.');
+    return;
+  }
   try {
-    // API 호출하여 댓글 추가
-    const newCommentData = await addCommentToDiary(props.film.id, newComment.value);
+    // API 호출하여 댓글 등록
+    const addedComment = await addCommentToDiary(props.film.id, newComment.value);
 
-    // 서버에서 반환된 댓글 데이터로 댓글 목록 업데이트
-    props.film.comments.push({
-      id: newCommentData.id,
-      content: newCommentData.content,
-      author: newCommentData.username.username, // 유저 이름
-      profile_image: newCommentData.username.profile_image, // 프로필 이미지
-      created_at: newCommentData.created_at, // 생성 시간
+    // 등록된 댓글을 맨 위에 추가
+    comments.value.unshift({
+      id: addedComment.id,
+      content: addedComment.content,
+      username: addedComment.username,
+      created_at: addedComment.created_at,
     });
 
-    newComment.value = ''; // 입력 필드 초기화
+    // 댓글 입력 필드 초기화
+    newComment.value = '';
+
+    console.log('댓글 등록 성공:', addedComment);
   } catch (error) {
     console.error('댓글 등록 중 오류 발생:', error);
-    alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해 주세요.');
   }
 };
 
+const handleEditComment = async (commentId) => {
+  const commentToEdit = comments.value.find(c => c.id === commentId);
+  if (!commentToEdit) return;
 
-const handleEditComment = async (commentId, updatedContent) => {
+  const updatedContent = prompt('댓글을 수정하세요:', commentToEdit.content);
+  if (updatedContent === null || updatedContent.trim() === '') return;
+
   try {
     const updatedComment = await updateComment(commentId, updatedContent);
-    const commentIndex = film.comments.findIndex((c) => c.id === commentId);
-    if (commentIndex !== -1) {
-      film.comments[commentIndex] = updatedComment; // 수정된 댓글로 갱신
+    const index = comments.value.findIndex(c => c.id === commentId);
+    if (index !== -1) {
+      comments.value[index] = updatedComment;
     }
   } catch (error) {
     console.error('댓글 수정 중 오류 발생:', error);
-    alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+    alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
   }
 };
 
 const handleDeleteComment = async (commentId) => {
-  try {
-    if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+  if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+    try {
       await deleteComment(commentId);
-      film.comments = film.comments.filter((c) => c.id !== commentId); // 삭제된 댓글 제거
+      comments.value = comments.value.filter(c => c.id !== commentId);
+    } catch (error) {
+      console.error('댓글 삭제 중 오류 발생:', error);
+      alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
-  } catch (error) {
-    console.error('댓글 삭제 중 오류 발생:', error);
-    alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
 </script>
+
