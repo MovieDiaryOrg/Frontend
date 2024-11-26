@@ -151,7 +151,7 @@ export const addCommentToDiary = async (journalPk, content) => {
 
 // 댓글 수정
 export const updateComment = async (commentId, content) => {
-  const response = await axios.patch(`${API_BASE_URL}/movieDiary/${commentId}/comment/`, {
+  const response = await axios.put(`${API_BASE_URL}/movieDiary/${commentId}/comment/edit/`, {
     content,
   });
   return response.data; // 성공 시 수정된 댓글 데이터 반환
@@ -159,7 +159,7 @@ export const updateComment = async (commentId, content) => {
 
 // 댓글 삭제
 export const deleteComment = async (commentId) => {
-  const response = await axios.delete(`${API_BASE_URL}/movieDiary/${commentId}/comment/delete/`);
+  const response = await axios.delete(`${API_BASE_URL}/movieDiary/${commentId}/comment/edit/`);
   return response.status; // 성공 시 204 반환
 };
 

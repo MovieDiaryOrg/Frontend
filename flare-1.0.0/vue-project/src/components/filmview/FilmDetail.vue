@@ -94,17 +94,27 @@
         <h2 class="text-2xl font-bold mb-4">댓글</h2>
         <div class="bg-gray-100 p-4 rounded-lg">
           <div class="space-y-4">
-            <div v-for="comment in comments" :key="comment.id" class="flex items-start space-x-4">
-              <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-                <UserIcon class="w-6 h-6 text-gray-600" />
+            <div v-for="comment in film.comments" :key="comment.id" :style="{ display: 'flex', flexDirection: 'column', width:'100%' }" >
+              <div class="flex items-start space-x-4">
+                <img :src="placeholderImage" alt="Profile" class="w-10 h-10 rounded-full" />
+                <div class="flex-1">
+                  <p class="font-medium text-gray-800">{{ comment.author }}</p>
+                  <p class="text-gray-600 mt-1">{{ comment.content }}</p>
+                </div>
+                <div class="flex space-x-2">
+                  <button @click="openCommentEditModal(comment.content)" class="text-blue-500 hover:underline">수정</button>
+                  <button @click="handleDeleteComment(comment.id)" class="text-red-500 hover:underline">삭제</button>
+                </div>
               </div>
-              <div class="flex-1">
-                <p class="font-medium text-gray-800">{{ comment.username.username }}</p>
-                <p class="text-gray-600 mt-1">{{ comment.content }}</p>
-              </div>
-              <div class="flex space-x-2">
-                <button @click="() => handleEditComment(comment.id)" class="text-blue-500 hover:underline">수정</button>
-                <button @click="() => handleDeleteComment(comment.id)" class="text-red-500 hover:underline">삭제</button>
+              <div class="mt-6 flex items-center" v-if="showCommentEditModal">
+                <input
+                class="flex-1 mb-2 px-4 py-2 border rounded-md bg-white"
+                  :style="{width : '100%'}"
+                  v-model="editComment"
+                />
+                <button @click="handleEditComment(comment.id)" class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400">
+                  <MessageCircleIcon class="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
@@ -165,7 +175,15 @@ import {
 } from 'lucide-vue-next';
 import RecommendationsModal from './RecommendationsModal.vue';
 import AddEditModal from './AddEditModal.vue';
-import { updateMovieDiary, deleteMovieDiary, addCommentToDiary, updateComment, deleteComment } from '@/services/diary';
+import { updateMovieDiary } from '@/services/diary';
+import { deleteMovieDiary } from '@/services/diary';
+import { addCommentToDiary, updateComment, deleteComment } from '@/services/diary';
+import { useRoute } from 'vue-router';
+import { createComment , retirevComments} from '@/services/comments';
+
+const route = useRoute();
+const journal_pk = route.params.journal_pk; // 라우트에서 가져옴
+
 
 const props = defineProps({
   film: { type: Object, required: true },
@@ -173,12 +191,13 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'delete-film', 'update-film']);
 
-const comments = ref(props.film.comments || []);
-const newComment = ref('');
+const newComment = ref('')
+const editComment = ref('');
 const isLiked = ref(false);
 const isFollowing = ref(false);
 const showRecommendationsModal = ref(false);
 const showEditModal = ref(false);
+const showCommentEditModal = ref(false);
 const selectedRecommendation = ref([]);
 
 const handleLike = () => {
@@ -221,6 +240,18 @@ const closeEditModal = () => {
   showEditModal.value = false;
 };
 
+const openCommentEditModal = (content) => {
+  const curState = showCommentEditModal.value;
+  showCommentEditModal.value = !curState;
+
+  if(!curState){
+    editComment.value = content
+  }else{
+    editComment.value = ''
+  }
+}
+
+
 const handleUpdateFilm = async (updatedFilm) => {
   try {
     const response = await updateMovieDiary(props.film.id, updatedFilm);
@@ -244,47 +275,79 @@ const handleDelete = async () => {
   }
 };
 
-const submitComment = async () => {
-  // 댓글 입력 값이 비어 있으면 알림
+// const addComment = () => {
+//   if (newComment.value.trim()) {
+//     emit('add-comment', newComment.value);
+//     newComment.value = '';
+//   }
+// };
+
+// const addComment = async () => {
+//   if (!newComment.value.trim()) return; // 입력값 확인
+
+//   try {
+//     // API 호출하여 댓글 추가
+//     const newCommentData = await addCommentToDiary(props.film.id, newComment.value);
+
+//     // 서버에서 반환된 댓글 데이터로 댓글 목록 업데이트
+//     props.film.comments.push({
+//       id: newCommentData.id,
+//       content: newCommentData.content,
+//       author: newCommentData.username.username, // 유저 이름
+//       profile_image: newCommentData.username.profile_image, // 프로필 이미지
+//       created_at: newCommentData.created_at, // 생성 시간
+//     });
+
+//     newComment.value = ''; // 입력 필드 초기화
+//   } catch (error) {
+//     console.error('댓글 등록 중 오류 발생:', error);
+//     alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+//   }
+// };
+
+const addComment = async() => {
   if (!newComment.value.trim()) {
     alert('댓글 내용을 입력해주세요.');
     return;
   }
+
   try {
-    // API 호출하여 댓글 등록
-    const addedComment = await addCommentToDiary(props.film.id, newComment.value);
+    // API 호출로 새 댓글 추가
+    const newCommentData = await createComment(props.film.id, newComment.value.trim());
+    const comments = await retirevComments(props.film.id)
 
-    // 등록된 댓글을 맨 위에 추가
-    comments.value.unshift({
-      id: addedComment.id,
-      content: addedComment.content,
-      username: addedComment.username,
-      created_at: addedComment.created_at,
-    });
+    // 댓글 배열에 새 댓글 추가
+    props.film.comments = comments
 
-    // 댓글 입력 필드 초기화
+    // 입력 필드 초기화
     newComment.value = '';
-
-    console.log('댓글 등록 성공:', addedComment);
+    console.log('새로 추가된 댓글:', newCommentData);
   } catch (error) {
-    console.error('댓글 등록 중 오류 발생:', error);
-    alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    console.error('댓글 추가 실패:', error);
+    alert('댓글 추가에 실패했습니다. 다시 시도해주세요.');
   }
 };
 
 const handleEditComment = async (commentId) => {
-  const commentToEdit = comments.value.find(c => c.id === commentId);
-  if (!commentToEdit) return;
-
-  const updatedContent = prompt('댓글을 수정하세요:', commentToEdit.content);
-  if (updatedContent === null || updatedContent.trim() === '') return;
+  if (!editComment.value.trim()) {
+    alert('댓글 내용을 입력해주세요.');
+    return;
+  }
 
   try {
-    const updatedComment = await updateComment(commentId, updatedContent);
-    const index = comments.value.findIndex(c => c.id === commentId);
-    if (index !== -1) {
-      comments.value[index] = updatedComment;
-    }
+    const updatedComment = await updateComment(commentId, editComment.value.trim());
+    // const commentIndex = film.comments.findIndex((c) => c.id === commentId);
+    // if (commentIndex !== -1) {
+    //   film.comments[commentIndex] = updatedComment; // 수정된 댓글로 갱신
+    // }
+
+    const comments = await retirevComments(props.film.id)
+
+    // 댓글 배열에 새 댓글 추가
+    props.film.comments = comments
+
+    editComment.value = '';
+    showCommentEditModal.value = false;
   } catch (error) {
     console.error('댓글 수정 중 오류 발생:', error);
     alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -295,11 +358,15 @@ const handleDeleteComment = async (commentId) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
       await deleteComment(commentId);
-      comments.value = comments.value.filter(c => c.id !== commentId);
-    } catch (error) {
-      console.error('댓글 삭제 중 오류 발생:', error);
-      alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      // film.comments = film.comments.filter((c) => c.id !== commentId); // 삭제된 댓글 제거
+      const comments = await retirevComments(props.film.id)
+
+      // 댓글 배열에 새 댓글 추가
+      props.film.comments = comments
     }
+  } catch (error) {
+    console.error('댓글 삭제 중 오류 발생:', error);
+    alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
 </script>

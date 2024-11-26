@@ -57,6 +57,25 @@ export const getProfile = async () => {
   return response.data
 }
 
+// 사용자 정보 Fetch
+export const fetchUserInfo = async () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) throw new Error('로그인이 필요합니다.');
+
+  try {
+    const response = await axios.get(`${API_BASE_URL}/user/info/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data; // 사용자 정보를 반환
+  } catch (error) {
+    console.error('사용자 정보 가져오기 실패:', error);
+    throw error;
+  }
+};
+
+
 // 회원 탈퇴
 export const deleteAccountAPI = async () => {
   const token = localStorage.getItem('access_token');

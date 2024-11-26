@@ -70,6 +70,7 @@ import { useRoute } from 'vue-router'; // 라우트에서 user_pk 파라미터�
 // 라우트에서 user_pk 가져오기
 const route = useRoute();
 const user_pk = route.params.user_pk || null;
+const userFirstName = ref('User'); // 사용자 이름 저장
 
 // 검색 및 필터 상태
 const searchQuery = ref('');
@@ -104,6 +105,10 @@ const fetchFilms = async () => {
       modifiedDate: film.data.modified_at, // 수정 날짜
     }));
     console.log('영화 데이터:', films.value);
+    // 사용자 이름 가져오기
+    if (response.length > 0) {
+      userFirstName.value = response[0]?.user_first_name || 'User'; // 응답에서 사용자 이름 추출
+    }
   } catch (error) {
     console.error('영화 목록을 가져오는 중 오류 발생:', error);
   }
