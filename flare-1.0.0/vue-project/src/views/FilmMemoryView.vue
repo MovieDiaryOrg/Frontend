@@ -167,16 +167,22 @@ const addNewFilm = (newFilm) => {
 };
 
 // 댓글 추가 로직
-const addComment = (newComment) => {
-  if (newComment.trim()) {
-    selectedFilm.value.comments.push({
-      id: Date.now(),
-      author: '새 사용자',
-      content: newComment,
-    });
-    selectedFilm.value.commentCount++;
+const addComment = async (newCommentContent) => {
+  if (!newCommentContent.trim()) return; // 댓글 내용 확인
+  try {
+    // 댓글 등록 API 호출
+    await addCommentToDiary(selectedFilm.value.id, newCommentContent);
+
+    // 영화 데이터를 다시 가져와 업데이트
+    await selectFilm(selectedFilm.value.id);
+
+    console.log('댓글 등록 후 영화 데이터 재로드 완료');
+  } catch (error) {
+    console.error('댓글 등록 중 오류 발생:', error);
+    alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
+
 
 // 추천 영화 로직
 const getRecommendations = () => {
