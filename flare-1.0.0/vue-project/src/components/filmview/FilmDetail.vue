@@ -47,7 +47,7 @@
         </div>
         <div class="flex items-center">
           <MessageCircleIcon class="w-6 h-6 text-blue-500 mr-2" />
-          <span class="text-xl font-semibold">{{ film.comments.length }}</span>
+          <span class="text-xl font-semibold">{{ comments.length }}</span>
         </div>
       </div>
 
@@ -84,12 +84,11 @@
       </div>
 
       <!-- AI Recommendations Section -->
-      <button @click="$emit('get-recommendations')" class="mt-4 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-semibold">
+      <button @click="openRecommendationModal" class="mt-4 flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-semibold">
           <AtomIcon class="w-6 h-6" />
           <span class="text-lg">AI가 추천해주는 다른 영화</span>
       </button>
 
-      <!-- Comments Section -->
       <!-- Comments Section -->
       <section class="mt-8">
         <h2 class="text-2xl font-bold mb-4">댓글</h2>
@@ -124,15 +123,18 @@
               v-model="newComment"
               placeholder="댓글 작성..."
               class="flex-1 mb-2 px-4 py-2 border rounded-md bg-white"
+              @keyup.enter="submitComment"
             />
-            <button @click="addComment" class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400">
+            <button 
+              @click="submitComment" 
+              class="ml-2 bg-gray-300 text-gray-800 p-2 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label="댓글 등록"
+            >
               <MessageCircleIcon class="w-5 h-5" />
             </button>
           </div>
         </div>
       </section>
-
-
     </div>
 
     <!-- RecommendationsModal -->
@@ -168,7 +170,7 @@ import {
   ChevronLeftIcon,
   AtomIcon,
   UserPlusIcon,
-  CalendarIcon,
+  UserIcon,
   Loader2Icon,
 } from 'lucide-vue-next';
 import RecommendationsModal from './RecommendationsModal.vue';
@@ -187,7 +189,7 @@ const props = defineProps({
   film: { type: Object, required: true },
 });
 
-const emit = defineEmits(['close', 'delete-film', 'add-comment', 'get-recommendations', 'update-film', 'delete-film']);
+const emit = defineEmits(['close', 'delete-film', 'update-film']);
 
 const newComment = ref('')
 const editComment = ref('');
@@ -198,27 +200,15 @@ const showEditModal = ref(false);
 const showCommentEditModal = ref(false);
 const selectedRecommendation = ref([]);
 
-const placeholderImage = computed(() => {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-      <rect width="100%" height="100%" fill="#e0e0e0"/>
-      <text x="50%" y="50%" font-family="Arial" font-size="12" fill="#666" dominant-baseline="middle" text-anchor="middle">
-        User
-      </text>
-    </svg>
-  `;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-});
-
 const handleLike = () => {
   isLiked.value = !isLiked.value;
+  // TODO: Implement like functionality with API
 };
 
 const handleFollow = () => {
   isFollowing.value = !isFollowing.value;
+  // TODO: Implement follow functionality with API
 };
-
-
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -226,15 +216,15 @@ const formatDate = (dateString) => {
   return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
 };
 
-const openRecommendationModal = (recommendation) => {
-  selectedRecommendation.value = props.film.recommended.map((rec) => ({
+const openRecommendationModal = () => {
+  selectedRecommendation.value = props.film.recommended?.map((rec) => ({
     title: rec.movie.title,
     poster: rec.movie.poster_path,
     releaseDate: rec.movie.release_date,
     rating: parseFloat(rec.movie.vote_average),
     plot: rec.movie.description || '설명이 없습니다.',
     reason: rec.reason,
-  }));
+  })) || [];
   showRecommendationsModal.value = true;
 };
 
@@ -264,19 +254,8 @@ const openCommentEditModal = (content) => {
 
 const handleUpdateFilm = async (updatedFilm) => {
   try {
-    // API 호출
     const response = await updateMovieDiary(props.film.id, updatedFilm);
-
-    // 로컬 상태 업데이트
-    props.film.title = response.title;
-    props.film.content = response.movie_journal.content;
-    props.film.watchedDate = response.movie_journal.watched_date;
-    props.film.rating = parseFloat(response.movie_journal.evaluation);
-    props.film.modifiedDate = response.movie_journal.modified_at;
-
-    console.log('수정된 영화 데이터:', response);
-
-    // 모달 닫기
+    emit('update-film', response);
     closeEditModal();
   } catch (error) {
     console.error('영화 수정 중 오류 발생:', error);
@@ -285,15 +264,14 @@ const handleUpdateFilm = async (updatedFilm) => {
 };
 
 const handleDelete = async () => {
-  try {
-    if (confirm(`정말로 "${props.film.title}" 영화를 삭제하시겠습니까?`)) {
-      await deleteMovieDiary(props.film.id); // API 호출
-      alert('영화가 성공적으로 삭제되었습니다.');
-      emit('delete-film', props.film.id); // 부모 컴포넌트에 삭제 이벤트 전달
+  if (confirm(`정말로 "${props.film.title}" 영화를 삭제하시겠습니까?`)) {
+    try {
+      await deleteMovieDiary(props.film.id);
+      emit('delete-film', props.film.id);
+    } catch (error) {
+      console.error('삭제 중 오류 발생:', error);
+      alert('영화 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-  } catch (error) {
-    console.error('삭제 중 오류 발생:', error);
-    alert('영화 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
 
@@ -350,7 +328,6 @@ const addComment = async() => {
   }
 };
 
-
 const handleEditComment = async (commentId) => {
   if (!editComment.value.trim()) {
     alert('댓글 내용을 입력해주세요.');
@@ -373,13 +350,13 @@ const handleEditComment = async (commentId) => {
     showCommentEditModal.value = false;
   } catch (error) {
     console.error('댓글 수정 중 오류 발생:', error);
-    alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+    alert('댓글 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
   }
 };
 
 const handleDeleteComment = async (commentId) => {
-  try {
-    if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+  if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+    try {
       await deleteComment(commentId);
       // film.comments = film.comments.filter((c) => c.id !== commentId); // 삭제된 댓글 제거
       const comments = await retirevComments(props.film.id)
@@ -393,3 +370,4 @@ const handleDeleteComment = async (commentId) => {
   }
 };
 </script>
+

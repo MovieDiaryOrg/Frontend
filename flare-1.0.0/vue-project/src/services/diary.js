@@ -129,7 +129,7 @@ export const deleteMovieDiary = async (id) => {
 
 // 댓글 등록
 export const addCommentToDiary = async (journalPk, content) => {
-  const token = localStorage.getItem('access_token'); // 로컬 스토리지에서 토큰 가져오기
+  const token = localStorage.getItem('access_token'); // 토큰 가져오기
   try {
     const response = await axios.post(
       `http://localhost:8000/movieDiary/${journalPk}/comment/`,
@@ -140,12 +140,13 @@ export const addCommentToDiary = async (journalPk, content) => {
         },
       }
     );
-    return response.data;
+    return response.data; // 응답 데이터 반환
   } catch (error) {
     console.error('댓글 등록 중 오류 발생:', error);
     throw error;
   }
 };
+
 
 
 // 댓글 수정

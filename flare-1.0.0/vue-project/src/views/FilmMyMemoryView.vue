@@ -186,16 +186,33 @@ const handleDeleteFilm = (deletedId) => {
 
 
 // 댓글 추가 로직
-const addComment = async (newCommentContent) => {
-  if (!newCommentContent.trim()) return;
+
+const addComment = async () => {
+  if (!newComment.value.trim()) return; // 댓글 내용이 비어 있는지 확인
+
   try {
-    const newComment = await addCommentToDiary(selectedFilm.value.id, newCommentContent);
-    selectedFilm.value.comments.push(newComment); // 새로운 댓글 추가
+    // API 호출로 댓글 등록
+    const newCommentData = await addCommentToDiary(props.film.id, newComment.value);
+
+    console.log('새 댓글 데이터:', newCommentData);
+
+    // 응답 데이터 구조에 맞게 로컬 상태 업데이트
+    comments.value.push({
+      id: newCommentData.id,
+      content: newCommentData.content,
+      author: newCommentData.username.username || '익명', // 사용자 이름
+      profile_image: newCommentData.username.profile_image || '/placeholder.png', // 프로필 이미지
+      created_at: newCommentData.created_at, // 생성 시간
+    });
+
+    newComment.value = ''; // 입력 필드 초기화
   } catch (error) {
     console.error('댓글 등록 중 오류 발생:', error);
     alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
+
+
 </script>
 
 <style scoped>
