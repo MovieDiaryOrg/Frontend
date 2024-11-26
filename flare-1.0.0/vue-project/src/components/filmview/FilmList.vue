@@ -64,6 +64,7 @@
 </template>
 
 <script setup>
+
 import { StarIcon, HeartIcon, MessageCircleIcon, SearchIcon } from 'lucide-vue-next'
 
 defineProps({
@@ -73,6 +74,7 @@ defineProps({
 })
 
 defineEmits(['update:searchQuery', 'update:filterOption', 'select-film'])
+
 </script>
 
 <style scoped>

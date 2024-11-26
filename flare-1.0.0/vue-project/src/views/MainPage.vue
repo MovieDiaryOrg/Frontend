@@ -1,51 +1,70 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <Header :isLoggedIn="isLoggedIn" @login="login" @logout="logout" />
+  <Suspense>
+    <template #default>
+      <div class="min-h-screen bg-white">
+        <Header :isLoggedIn="isLoggedIn" @login="login" @logout="logout" />
 
-    <main class="max-w-7xl mx-auto px-6 py-12">
-      <h1 class="text-[120px] font-black leading-tight tracking-tight mb-12">
-        MY FILM MEMORY
-      </h1>
+        <main class="max-w-7xl mx-auto px-6 py-12">
+          <h1 class="text-[120px] font-black leading-tight tracking-tight mb-12">
+            MY FILM MEMORY
+          </h1>
 
-      <ScrollingText />
+          <ScrollingText />
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <FeaturedFilm :film="featuredFilm" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <FeaturedFilm :film="featuredFilm" />
 
-        <section>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">감상평 모아보기</h2>
-            <select v-model="sortBy" class="px-4 py-2 border rounded-md">
-              <option value="latest">최신순</option>
-              <option value="likes">좋아요 많은 순</option>
-              <option value="rating">별점 높은 순</option>
-            </select>
+            <section>
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">감상평 모아보기</h2>
+                <select v-model="sortBy" class="px-4 py-2 border rounded-md">
+                  <option value="latest">최신순</option>
+                  <option value="likes">좋아요 많은 순</option>
+                  <option value="rating">별점 높은 순</option>
+                </select>
+              </div>
+              <div class="bg-gray-100 p-6 rounded-2xl h-[600px] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4">
+                  <ReviewCard 
+                    v-for="review in sortedReviews" 
+                    :key="review.id" 
+                    :image="review.image"
+                    :title="review.title"
+                    :author="review.author"
+                    :rating="review.rating"
+                    :likes="review.likes"
+                  />
+                </div>
+              </div>
+            </section>
           </div>
-          <div class="bg-gray-100 p-6 rounded-2xl h-[600px] overflow-y-auto">
-            <div class="grid grid-cols-2 gap-4">
-              <ReviewCard 
-                v-for="review in sortedReviews" 
-                :key="review.id" 
-                :image="review.image"
-                :title="review.title"
-                :author="review.author"
-                :rating="review.rating"
-                :likes="review.likes"
-              />
-            </div>
-          </div>
-        </section>
+        </main>
       </div>
-    </main>
-  </div>
+    </template>
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+  </Suspense>  
 </template>
 
+
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/Header.vue'
 import ScrollingText from '@/components/ScrollingText.vue'
 import FeaturedFilm from '@/components/FeaturedFilm.vue'
 import ReviewCard from '@/components/ReviewCard.vue'
+import MainPage from '@/services/main'
+
+const featuredFilm = ref({
+  tmdb_id: 0,
+  title: '',
+  image: '', // 기본값 제공
+  release_date: '',
+  description: '',
+  genre: []
+});
+const reviews = ref([]);
 
 const isLoggedIn = ref(false)
 const sortBy = ref('latest')
@@ -53,21 +72,41 @@ const sortBy = ref('latest')
 const login = () => isLoggedIn.value = true
 const logout = () => isLoggedIn.value = false
 
-const featuredFilm = {
-  title: '다크나이트',
-  image: '/placeholder.svg?height=500&width=350',
-  genre: '범죄, 드라마, 액션',
-  description: '배트맨과 조커의 대결을 그린 현실적이고 어두운 히어로 영화로, 분돈과 정의의 경계를 탐구합니다.'
-}
+onMounted(async() => {
+  try{
+    const mainPageData = await MainPage();
 
-const reviews = ref([
-  { id: 1, title: '오펜하이머', author: 'admin1', image: '/placeholder.svg?height=200&width=200', likes: 150, rating: 4.8 },
-  { id: 2, title: '7번방의 선물', author: 'user123', image: '/placeholder.svg?height=200&width=200', likes: 120, rating: 4.5 },
-  { id: 3, title: '인사이드아웃', author: 'moviefan', image: '/placeholder.svg?height=200&width=200', likes: 100, rating: 4.7 },
-  { id: 4, title: '인셉션', author: 'dreamexplorer', image: '/placeholder.svg?height=200&width=200', likes: 200, rating: 4.9 },
-  { id: 5, title: '기생충', author: 'cinephile', image: '/placeholder.svg?height=200&width=200', likes: 180, rating: 4.6 },
-  { id: 6, title: '어벤져스: 엔드게임', author: 'marveluniverse', image: '/placeholder.svg?height=200&width=200', likes: 250, rating: 4.8 },
-])
+    // 인기 영화 데이터 설정
+    const popularMovie = mainPageData.popular_movie || {};
+    featuredFilm.value = {
+      tmdb_id: popularMovie.tmdb_id || 0,
+      title: popularMovie.title || '',
+      image: popularMovie.image || '/placeholder.svg',
+      release_date: popularMovie.release_date || '',
+      description: popularMovie.description || '',
+      genre: (popularMovie.genre || []).join(', ') // 장르를 쉼표로 구분된 문자열로 변환
+    };
+
+    // 리뷰 데이터 설정
+    const movieJournals = mainPageData.movie_journals || [];
+
+    reviews.value = movieJournals.map((journal) => ({
+      id: journal.movie_journal.id,
+      // title: journal.movie_journal.title.split(' ')[1] || 'No Title', // 임시 제목 추출
+      title: journal.title|| 'No Title', // 임시 제목 추출
+      author: journal.movie_journal.user.username,
+      image: journal.movie_journal.ai_img 
+      ? `http://localhost:8000${journal.movie_journal.ai_img}`
+      : '/placeholder.svg',
+      rating: parseFloat(journal.movie_journal.evaluation) || 0,
+      likes: journal.movie_journal.likes_count || 0
+    }));
+
+    console.log('Reviews:', reviews.value);
+  } catch (err) {
+    console.error('Error loading main page data:', err);
+  }
+});
 
 const sortedReviews = computed(() => {
   return [...reviews.value].sort((a, b) => {
@@ -80,5 +119,4 @@ const sortedReviews = computed(() => {
 </script>
 
 <style scoped>
-/* Add any scoped styles here if needed */
 </style>

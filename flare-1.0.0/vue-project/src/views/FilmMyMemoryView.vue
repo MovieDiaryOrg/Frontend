@@ -9,23 +9,25 @@
       <Transition name="page" mode="out-in">
         <!-- 영화 목록 -->
         <FilmList
-          v-if="!selectedFilm"
-          :films="filteredFilms"
-          :searchQuery="searchQuery"
-          :filterOption="filterOption"
-          @update:searchQuery="searchQuery = $event"
-          @update:filterOption="filterOption = $event"
-          @select-film="selectFilm"
-        />
+        v-if="!selectedFilm"
+        :films="filteredFilms"
+        :searchQuery="searchQuery"
+        :filterOption="filterOption"
+        @update:searchQuery="searchQuery = $event"
+        @update:filterOption="filterOption = $event"
+        @select-film="selectFilm"
+      />
         
         <!-- 영화 상세 -->
         <FilmDetail
-          v-else
-          :film="selectedFilm"
-          @close="selectedFilm = null"
-          @add-comment="addComment"
-          @get-recommendations="getRecommendations"
-        />
+        v-else
+        :film="selectedFilm"
+        @close="selectedFilm = null"
+        @add-comment="addComment"
+        @get-recommendations="getRecommendations"
+        @update-film="handleUpdateFilm"
+        @delete-film="handleDeleteFilm" 
+      />
       </Transition>
     </main>
 
@@ -55,7 +57,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { PlusIcon } from 'lucide-vue-next';
@@ -65,11 +66,6 @@ import FilmDetail from '@/components/filmview/FilmDetail.vue';
 import AddFilmModal from '@/components/filmview/AddFilmModal.vue';
 import RecommendationsModal from '@/components/filmview/RecommendationsModal.vue';
 import { fetchUserMovies, fetchMovieDetail } from '@/services/diary.js';
-import { useRoute } from 'vue-router'; // 라우트에서 user_pk 파라미터를 가져오기 위해 import
-
-// 라우트에서 user_pk 가져오기
-const route = useRoute();
-const user_pk = route.params.user_pk || null;
 
 // 검색 및 필터 상태
 const searchQuery = ref('');
@@ -89,8 +85,7 @@ const films = ref([]);
 // API에서 영화 데이터를 가져오는 함수
 const fetchFilms = async () => {
   try {
-    // fetchUserMovies 호출 시 user_pk 전달
-    const response = await fetchUserMovies(user_pk); // 사용자 전체 영화 리스트 API 호출
+    const response = await fetchUserMovies(); // 사용자 전체 영화 리스트 API 호출
     films.value = response.map((film) => ({
       id: film.data.id, // 영화 기록의 고유 PK
       title: film.title, // 영화 제목
@@ -138,18 +133,18 @@ const selectFilm = async (id) => {
       content: filmDetail.content,
       rating: parseFloat(filmDetail.evaluation),
       likes: filmDetail.likes,
-      comments: (filmDetail.comments || []).length,
+      comments: filmDetail.comments || [],
       watchedDate: filmDetail.watched_date,
       createdDate: filmDetail.created_at,
       modifiedDate: filmDetail.modified_at,
       recommendedMovies: (filmDetail.recommended || []).map((rec) => ({
         id: rec.movie.tmdb_id,
         title: rec.movie.title,
-        plot : rec.movie.description || '줄거리 정보가 없습니다.', // 줄거리
-        releaseDate: rec.movie.release_date,
-        poster: rec.movie.poster_path,
-        rating: parseFloat(rec.movie.vote_average) || 'N/A',
-        reason: rec.reason,
+        plot: rec.movie.description || '줄거리 정보가 없습니다.', // 줄거리 매핑
+        releaseDate: rec.movie.release_date, // 개봉일
+        poster: rec.movie.poster_path, // 포스터
+        rating: parseFloat(rec.movie.vote_average) || 'N/A', // 평점 매핑
+        reason: rec.reason, // 추천 이유
       })),
     };
 
@@ -166,17 +161,7 @@ const addNewFilm = (newFilm) => {
   showAddFilmModal.value = false;
 };
 
-// 댓글 추가 로직
-const addComment = (newComment) => {
-  if (newComment.trim()) {
-    selectedFilm.value.comments.push({
-      id: Date.now(),
-      author: '새 사용자',
-      content: newComment,
-    });
-    selectedFilm.value.commentCount++;
-  }
-};
+
 
 // 추천 영화 로직
 const getRecommendations = () => {
@@ -188,6 +173,29 @@ const getRecommendations = () => {
   }
 };
 
+
+const handleDeleteFilm = (deletedId) => {
+  // 영화 리스트에서 삭제
+  films.value = films.value.filter((film) => film.id !== deletedId);
+
+  // 선택된 영화가 삭제된 경우 초기화
+  if (selectedFilm.value && selectedFilm.value.id === deletedId) {
+    selectedFilm.value = null;
+  }
+};
+
+
+// 댓글 추가 로직
+const addComment = async (newCommentContent) => {
+  if (!newCommentContent.trim()) return;
+  try {
+    const newComment = await addCommentToDiary(selectedFilm.value.id, newCommentContent);
+    selectedFilm.value.comments.push(newComment); // 새로운 댓글 추가
+  } catch (error) {
+    console.error('댓글 등록 중 오류 발생:', error);
+    alert('댓글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+  }
+};
 </script>
 
 <style scoped>
