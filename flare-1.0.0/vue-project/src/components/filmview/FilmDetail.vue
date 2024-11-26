@@ -358,16 +358,12 @@ const handleDeleteComment = async (commentId) => {
   if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
     try {
       await deleteComment(commentId);
-      // film.comments = film.comments.filter((c) => c.id !== commentId); // 삭제된 댓글 제거
-      const comments = await retirevComments(props.film.id)
-
-      // 댓글 배열에 새 댓글 추가
-      props.film.comments = comments
+      const comments = await retirevComments(props.film.id);
+      props.film.comments = comments;
+    } catch (error) {
+      console.error('댓글 삭제 중 오류 발생:', error);
+      alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-  } catch (error) {
-    console.error('댓글 삭제 중 오류 발생:', error);
-    alert('댓글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
   }
 };
 </script>
-

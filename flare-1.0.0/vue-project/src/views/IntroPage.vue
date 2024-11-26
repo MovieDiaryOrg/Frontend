@@ -108,12 +108,6 @@ const swiperOptions = {
       </div>
   </div>
 
-  <div class="s-hero__video">
-      <a class="s-hero__video-link" href="https://player.vimeo.com/video/117310401?color=01aef0&amp;title=0&amp;byline=0&amp;portrait=0" data-lity="">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M21 12l-18 12v-24z"/></svg>
-          <span class="s-hero__video-text">Play Video</span>
-      </a>
-  </div>
 
   <div class="s-hero__scroll">
       <a href="#about" class="s-hero__scroll-link smoothscroll">
@@ -265,106 +259,28 @@ const swiperOptions = {
                 <h3 class="h6">START</h3>
             </div>
         </div>
-        <div class="column large-6 w-900-stack">
-            <h1 class="display-1" data-aos="fade-up">
-                Here are some of our projects we done lately. Feel
-                free to check them out.
-            </h1>
-        </div>
     </div> <!-- end s-portfolio__top-->
-
-    <div class="row s-portfolio__list block-large-1-2 block-tab-full collapse">
-        <div class="column" data-aos="fade-up">
-            <div class="folio-item">
-                <div class="folio-item__thumb">
-                    <a class="folio-item__thumb-link" href="@/assets/images/portfolio/gallery/g-red-wheel.jpg" title="The Red Wheel" data-size="1050x700">
-                        <img src="@/assets/images/portfolio/red-wheel.jpg" 
-                            srcset="@/assets/images/portfolio/red-wheel.jpg 1x, @/assets/images/portfolio/red-wheel@2x.jpg 2x" alt="">
-                    </a>
-                </div>
-                <div class="folio-item__info">
-                    <div class="folio-item__cat">Branding</div>
-                    <h4 class="folio-item__title">The Red Wheel</h4>
-                </div>
-                <a href="https://www.behance.net/" title="Project Link" class="folio-item__project-link">Project Link</a>
-                <div class="folio-item__caption">
-                    <p>Vero molestiae sed aut natus excepturi. Et tempora numquam. Temporibus iusto quo.Unde dolorem corrupti neque nisi.</p>
-                </div>
-            </div>
-        </div> <!-- end column -->
-        <div class="column" data-aos="fade-up">
-            <div class="folio-item">
-                <div class="folio-item__thumb">
-                    <a class="folio-item__thumb-link" href="@/assets/images/portfolio/gallery/g-music-life.jpg" title="Music Life" data-size="1050x700">
-                        <img src="@/assets/images/portfolio/music-life.jpg" 
-                            srcset="@/assets/images/portfolio/music-life.jpg 1x, @/assets/images/portfolio/music-life@2x.jpg 2x" alt="">
-                    </a>
-                </div>
-                <div class="folio-item__info">
-                    <div class="folio-item__cat">Frontend Design</div>
-                    <h4 class="folio-item__title">Music Life</h4>
-                </div>
-                <a href="https://www.behance.net/" title="Project Link" class="folio-item__project-link">Project Link</a>
-                <div class="folio-item__caption">
-                    <p>Vero molestiae sed aut natus excepturi. Et tempora numquam. Temporibus iusto quo.Unde dolorem corrupti neque nisi.</p>
-                </div>
-            </div>
-        </div> <!-- end column -->
-        <div class="column" data-aos="fade-up">
-            <div class="folio-item">
-                <div class="folio-item__thumb">
-                    <a class="folio-item__thumb-link" href="@/assets/images/portfolio/gallery/g-oi-logo.jpg" Title="OI Logo" data-size="1050x700">
-                        <img src="@/assets/images/portfolio/oi-logo.jpg" 
-                            srcset="@/assets/images/portfolio/oi-logo.jpg 1x, @/assets/images/portfolio/oi-logo@2x.jpg 2x" alt="">
-                    </a>
-                </div>
-                <div class="folio-item__info">
-                    <div class="folio-item__cat">Branding</div>
-                    <h4 class="folio-item__title">OI Logo</h4>
-                </div>
-                <a href="https://www.behance.net/" title="Project Link" class="folio-item__project-link">Project Link</a>
-                <div class="folio-item__caption">
-                    <p>Vero molestiae sed aut natus excepturi. Et tempora numquam. Temporibus iusto quo.Unde dolorem corrupti neque nisi.</p>
-                </div>
-            </div>
-        </div> <!-- end column -->
-        <div class="column" data-aos="fade-up">
-            <div class="folio-item">
-                <div class="folio-item__thumb">
-                    <a class="folio-item__thumb-link" href="@/assets/images/portfolio/gallery/g-corrugated-sheets.jpg" title="Corrugated Sheets" data-size="1050x700">
-                        <img src="@/assets/images/portfolio/corrugated-sheets.jpg" 
-                            srcset="@/assets/images/portfolio/corrugated-sheets.jpg 1x, @/assets/images/portfolio/corrugated-sheets@2x.jpg 2x" alt="">
-                    </a>
-                </div>
-                <div class="folio-item__info">
-                    <div class="folio-item__cat">Frontend Design</div>
-                    <h4 class="folio-item__title">Corrugated Sheets</h4>
-                </div>
-                <a href="https://www.behance.net/" title="Project Link" class="folio-item__project-link">Project Link</a>
-                <div class="folio-item__caption">
-                    <p>Vero molestiae sed aut natus excepturi. Et tempora numquam. Temporibus iusto quo.Unde dolorem corrupti neque nisi.</p>
-                </div>
-            </div>
-        </div> <!-- end column -->
-    </div> <!-- folio-list -->
     <div class="row">
-        <div class="column large-12 text-center" data-aos="fade-up">
-            <h2 class="display-2 mb-4">
-                지금 바로 시작해보세요
-            </h2>
-            <div class="start-button-container" style="margin-top: 3rem;">
-                <img 
+    <div class="column large-12 text-center" data-aos="fade-up">
+        <div 
+            class="start-button-container" 
+            style="margin-top: 3rem; display: flex; flex-direction: column; align-items: center;"
+        >
+            <img 
                 id="startButton" 
                 src="@/assets/images/start_button.png" 
                 alt="시작하기" 
-                style="cursor: pointer; max-width: 200px;"
+                style="cursor: pointer; max-width: 200px; margin-bottom: 2rem;"
                 @click="goToHomePage"
-                >
-            </div>
+            >
+            <h2 class="display-2 mb-4">
+                지금 바로 시작해보세요
+            </h2>
         </div>
     </div>
+</div>
 
-  </section> <!-- end s-portfolio -->
+    </section> <!-- end s-portfolio -->
 
 
 
@@ -417,6 +333,18 @@ const swiperOptions = {
 @import '@/assets/css/vendor.css';
 @import '@/assets/css/styles.css';
 
+
+.start-button-container {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.start-button {
+    cursor: pointer;
+    max-width: 200px;
+}
 .no-break {
   white-space: nowrap;
   overflow: hidden;
